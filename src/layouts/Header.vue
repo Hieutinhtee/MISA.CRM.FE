@@ -15,7 +15,7 @@
 
             </div> -->
             <div class="tabs-list-item d-flex">
-                <div v-for="item in tabsListItem" class="tabs-item d-flex" :key="index"
+                <div v-for="(item, index) in tabsListItem" class="tabs-item d-flex" :key="index"
                     :class="item.active ? 'active' : ''">
                     <div class="tabs-icon" :class="[item.icon ? 'icon-' + item.icon : '']"></div>
 
@@ -43,7 +43,7 @@ const tabsListItem = [
 ]
 </script>
 
-<style scoped>
+<style>
 .header {
     padding: 8px 0;
     box-shadow: 0 2px 4px #1f222929;
@@ -70,56 +70,56 @@ const tabsListItem = [
     width: 16px;
     height: 16px;
     background: url('../assets/icons/icon.svg') no-repeat 0px -272px;
-    box-sizing: content-box;
+
 }
 
 .icon-headquarters {
     width: 16px;
     height: 16px;
     background: url('../assets/icons/icon.svg') no-repeat -224px -288px;
-    box-sizing: content-box;
+
 }
 
 .icon-wallet {
     width: 16px;
     height: 16px;
     background: url('../assets/icons/icon.svg') no-repeat -80px -48px;
-    box-sizing: content-box;
+
 }
 
 .icon-quote {
     width: 16px;
     height: 16px;
     background: url('../assets/icons/icon.svg') no-repeat -64px -48px;
-    box-sizing: content-box;
+
 }
 
 .icon-cart {
     width: 16px;
     height: 16px;
     background: url('../assets/icons/icon.svg') no-repeat -144px -48px;
-    box-sizing: content-box;
+
 }
 
 .icon-box {
     width: 16px;
     height: 16px;
     background: url('../assets/icons/icon.svg') no-repeat -16px -48px;
-    box-sizing: content-box;
+
 }
 
 .icon-chart {
     width: 16px;
     height: 16px;
     background: url('../assets/icons/icon.svg') no-repeat -32px -272px;
-    box-sizing: content-box;
+
 }
 
 .icon-hamburger {
     width: 16px;
     height: 16px;
     background: url('../assets/icons/icon.svg') no-repeat -49px -272px;
-    box-sizing: content-box;
+
 }
 
 .img-avt {

@@ -12,11 +12,13 @@ import 'dayjs/locale/vi';
 
 // set toàn hệ thống sang tiếng Việt
 dayjs.locale('vi');
+import PrimeVue from 'primevue/config';
 
 
 const app = createApp(App)
 
 app.use(Antd);
+app.use(PrimeVue);
 app.use(router)
 
 app.mount('#app')
