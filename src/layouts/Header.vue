@@ -5,15 +5,7 @@
 
             <div class="icon-logo"></div>
             <div class="m-l-12 title title-name">CRM</div>
-            <!-- <div class="header-2 d-flex align-content-center flex-e">
-                <div v-for="(item, index) in headerIcons" :key="index" :class="[
-                    'icon',
-                    item.icon ? 'icon-' + item.icon : '',
-                    'm-r-24'
-                ]">
-                </div>
 
-            </div> -->
             <div class="tabs-list-item d-flex">
                 <div v-for="(item, index) in tabsListItem" class="tabs-item d-flex" :key="index"
                     :class="item.active ? 'active' : ''">
@@ -57,79 +49,7 @@ const tabsListItem = [
 
 
 /* icon */
-.icon-logo {
 
-    width: 32px;
-    height: 32px;
-    display: inline-block;
-    background-image: url('../assets/icons/Logo.svg');
-    margin-left: 48px;
-}
-
-.icon-home {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat 0px -272px;
-
-}
-
-.icon-headquarters {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -224px -288px;
-
-}
-
-.icon-wallet {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -80px -48px;
-
-}
-
-.icon-quote {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -64px -48px;
-
-}
-
-.icon-cart {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -144px -48px;
-
-}
-
-.icon-box {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -16px -48px;
-
-}
-
-.icon-chart {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -32px -272px;
-
-}
-
-.icon-hamburger {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -49px -272px;
-
-}
-
-.img-avt {
-    border-radius: 45%;
-    width: 32px;
-    height: 32px;
-    vertical-align: middle;
-    background: url("../assets/imgs/avt.png") no-repeat;
-    cursor: pointer;
-}
 
 /* tabs */
 .tabs-list-item {
@@ -165,11 +85,13 @@ const tabsListItem = [
 }
 
 .under-line-tabs-active {
-    width: 100%;
+
+    /* width: 100%; */
     height: 2px;
     position: absolute;
     bottom: -8px;
-    left: 0;
+    left: 8px;
+    right: 8px;
     background-color: var(--primary-color);
 }
 </style>

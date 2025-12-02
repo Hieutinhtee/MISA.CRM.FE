@@ -1,13 +1,9 @@
 <template>
     <!-- Tool bar -->
-    <div class="toolbar d-flex justify-content-between">
+    <div class="toolbar d-flex justify-content-between flex-col">
         <div class="left-bar d-flex align-content-center">
-            <div class="show-menu d-flex ">
-                <div class="icon-folder"></div>
-                <div class="title-show-menu">Tất cả khách hàng</div>
-                <div class="icon-down"></div>
-            </div>
-            <div class="btn-edit">Sửa</div>
+            <ms-button class="show-menu" iconLeft="folder" iconRight="down" type="outline">Tất cả khách hàng</ms-button>
+            <ms-text-color type="primary">Sửa</ms-text-color>
             <div class="btn-reload">
                 <div class="icon-reload"></div>
             </div>
@@ -21,38 +17,19 @@
             <div class="btn-headquarter-ai">
                 <div class="icon-headquarter-ai"></div>
             </div>
-            <div class="btn-add-customer d-flex">
-                <div class="icon-plus"></div>
-                <div class="title-add">Thêm</div>
-            </div>
-            <div class="btn-excel-import d-flex">
-                <div class="icon-import"></div>
-                <div class="title-import">Nhập từ Excel</div>
-            </div>
-            <div class="btn-show-more ">
-                <div class="icon-show-more"></div>
-            </div>
-            <div class="btn-show-list-action d-flex">
-                <div class="icon-list"></div>
-                <div class="icon-down"></div>
-            </div>
+            <ms-button iconLeft="plus" type="primary">Thêm</ms-button>
+            <ms-button iconLeft="import" type="outline-primary">Nhập từ Excel</ms-button>
+            <ms-button iconLeft="show-more" type="outline"></ms-button>
+            <ms-button iconLeft="list" iconRight="down" type="outline"></ms-button>
+
         </div>
     </div>
-    <ms-table :columns="cols" :rows="data"></ms-table>
+
 </template>
 
 <script setup>
-import MsTable from '../components/ms-table/MsTable.vue';
-const cols = [
-    { field: "name", header: "Tên", width: 200 },
-    { field: "age", header: "Tuổi", width: 100 },
-    { field: "email", header: "Email", width: 250 }
-];
-
-const data = [
-    { name: "A", age: 20, email: "a@gmail.com" },
-    { name: "B", age: 21, email: "b@gmail.com" }
-];
+import MsTextColor from '@/components/ms-button/MsTextColor.vue';
+import MsButton from '@/components/ms-button/MsButton.vue';
 </script>
 
 <style>
@@ -66,31 +43,21 @@ const data = [
 .show-menu {
     border-radius: 4px;
     border: 1px solid #d3d7de;
-    padding: 7px 12px;
+    padding: 7px 12px !important;
     background-color: #ffffff;
     cursor: pointer;
-}
-
-.title-show-menu {
-    margin: 0 8px;
+    margin-right: 16px;
     font-size: 13px;
     font-weight: 600;
 }
 
-.btn-edit {
-    color: var(--primary-color);
-    cursor: pointer;
-    margin-left: 16px;
-    font-size: 13px;
-}
 
-.btn-edit:hover {
-    text-decoration: underline;
-}
+
 
 .btn-reload {
     margin-left: 16px;
     padding: 5px;
+    cursor: pointer;
 }
 
 .btn-reload:hover {
@@ -130,16 +97,17 @@ const data = [
 
 .btn-headquarter-ai {
     border-radius: 4px;
-    padding: 6px;
+    padding: 6px 6px 7px 6px;
     border-image: linear-gradient(251deg, #9F73F1 71.93%, #4262F0 24.05%) 1;
     background:
         linear-gradient(90deg, #E7EBFD 0%, #ECE7FD 32.21%, #E5F7FF 66.11%, #FDEFE7 100%) padding-box,
         linear-gradient(90deg, #9F73F1 71.93%, #4262F0 24.05%) border-box;
     border: 1px solid transparent;
     border-right-width: 2px;
+    cursor: pointer;
 }
 
-.btn-add-customer {
+/* .btn-add-customer {
     background-color: var(--primary-color);
     padding: 6px 16px 7px 8px;
     border-radius: 4px;
@@ -161,73 +129,5 @@ const data = [
     padding: 7px;
     border-radius: 4px;
     border: 1px solid #d3d7de;
-}
-
-/* Icon spite */
-.icon-folder {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -208px -177px;
-}
-
-.icon-down {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -48px -32px;
-}
-
-.icon-reload {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -352px -32px;
-}
-
-.icon-search-ai {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat 0px -1425px;
-    position: absolute;
-    left: 10px;
-}
-
-.icon-ai {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/ai-icon-16.svg') no-repeat;
-    position: absolute;
-    right: 10px;
-}
-
-.icon-headquarter-ai {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -16px -1425px;
-}
-
-.icon-plus {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -240px -128px;
-    margin-right: 8px;
-}
-
-.icon-import {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -176px -192px;
-    margin-right: 8px;
-}
-
-.icon-show-more {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -48px 0px;
-}
-
-.icon-list {
-    width: 16px;
-    height: 16px;
-    background: url('../assets/icons/icon.svg') no-repeat -128px -304px;
-    margin-right: 4px;
-}
+} */
 </style>

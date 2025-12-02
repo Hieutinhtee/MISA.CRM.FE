@@ -17,7 +17,11 @@ import PrimeVue from 'primevue/config';
 
 const app = createApp(App)
 
-app.use(Antd);
+app.use(Antd, {
+   token: {
+      borderRadius: 4
+   }
+});
 app.use(PrimeVue);
 app.use(router)
 

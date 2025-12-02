@@ -1,0 +1,154 @@
+/* Icon */
+.icon-logo {
+   width: 32px;
+   height: 32px;
+   display: inline-block;
+   background-image: url('../icons/Logo.svg');
+   margin-left: 48px;
+   cursor: pointer;
+}
+
+.icon-home {
+   width: 16px !important;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat 0px -272px;
+
+}
+
+.icon-headquarters {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -224px -288px;
+
+}
+
+.icon-wallet {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -80px -48px;
+
+}
+
+.icon-quote {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -64px -48px;
+
+}
+
+.icon-cart {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -144px -48px;
+
+}
+
+.icon-box {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -16px -48px;
+
+}
+
+.icon-chart {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -32px -272px;
+
+}
+
+.icon-hamburger {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -49px -272px;
+
+}
+
+.img-avt {
+   border-radius: 45%;
+   width: 32px;
+   height: 32px;
+   vertical-align: middle;
+   background: url("../imgs/avt.png") no-repeat;
+   cursor: pointer;
+}
+
+.icon-sort-setting {
+   width: 16px;
+   height: 16px;
+   background: url('@/assets/icons/icon.svg') no-repeat -272px -176px;
+}
+
+.icon-phone {
+   width: 16px;
+   height: 16px;
+   background: url('@/assets/icons/icon.svg') no-repeat -320px -48px;
+   margin-right: 8px
+}
+
+.icon-folder {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -208px -177px;
+}
+
+.icon-down {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -48px -32px;
+}
+
+.icon-reload {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -352px -32px;
+}
+
+.icon-search-ai {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat 0px -1425px;
+   position: absolute;
+   left: 10px;
+}
+
+.icon-ai {
+   width: 16px;
+   height: 16px;
+   background: url('./icons/ai-icon-16.svg') no-repeat;
+   position: absolute;
+   right: 10px;
+}
+
+.icon-headquarter-ai {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -16px -1425px;
+}
+
+.icon-plus {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -240px -128px;
+
+}
+
+.icon-import {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -176px -192px;
+
+}
+
+.icon-show-more {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -48px 0px;
+}
+
+.icon-list {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -128px -304px;
+
+}
