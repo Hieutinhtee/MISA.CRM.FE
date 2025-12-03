@@ -115,7 +115,7 @@
 .icon-ai {
    width: 16px;
    height: 16px;
-   background: url('./icons/ai-icon-16.svg') no-repeat;
+   background: url('../icons/ai-icon-16.svg') no-repeat;
    position: absolute;
    right: 10px;
 }
@@ -151,4 +151,34 @@
    height: 16px;
    background: url('../icons/icon.svg') no-repeat -128px -304px;
 
+}
+
+.icon-pagination-first {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -113px -224px;
+}
+
+.icon-left {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -289px -32px;
+}
+
+.icon-pagination-end {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -129px -224px;
+}
+
+.icon-right {
+   width: 16px;
+   height: 16px;
+   background: url('../icons/icon.svg') no-repeat -302px -32px;
+}
+
+.icon-input-img {
+   width: 48px;
+   height: 48px;
+   background: url('../icons/icon.svg') no-repeat 0px -848px;
 }

@@ -57,6 +57,10 @@
   margin-left: 8px;
 }
 
+.m-r-8 {
+  margin-right: 8px;
+}
+
 .m-l-12 {
   margin-left: 12px;
 }
@@ -99,7 +103,18 @@ label {
   gap: 16px;
 }
 
+.gap12 {
+  gap: 12px;
+}
+
+.gap80 {
+  gap: 80px;
+}
 
 .hidden {
   display: none;
+}
+
+.w-100 {
+  width: 100%;
 }

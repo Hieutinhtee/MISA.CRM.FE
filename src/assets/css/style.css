@@ -6,8 +6,20 @@ html {
   box-sizing: border-box;
   font-size: 13px;
   font-family: Inter, Roboto, Helvetica, Arial, sans-serif;
+
 }
 
 :root {
   --primary-color: #4262f0;
+}
+
+.btn-grey {
+  margin-left: 16px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.btn-grey:hover {
+  background-color: #c5c9d3;
+  border-radius: 50%;
 }

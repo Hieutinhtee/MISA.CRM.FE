@@ -5,9 +5,8 @@
          <Column selectionMode="multiple" :frozen="true"></Column>
          <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" :sortable="true"
             :style="col.width ? {
-               width: col.width + 'px',
-               maxWidth: col.width + 'px',
-               minWidth: '60px'
+               minWidth: col.width + 'px',
+               maxWidth: col.width + 'px'
             } : null">
             <template #body="slotProps">
                <div class="ellipsis" :title="slotProps.data[col.field]">
@@ -42,7 +41,7 @@
                <strong class="total-debt-value">22.000.00</strong>
             </div>
          </div>
-         <div class="footer-end">
+         <div class="footer-end d-flex align-content-center">
             <a-select v-model:value="pageSize" style="width: 180px" lineHeight="32px">
                <template #suffixIcon>
                   <div class="icon-down"></div>
@@ -52,7 +51,16 @@
                <a-select-option :value="50">50 Bản ghi trên trang</a-select-option>
                <a-select-option :value="100">100 Bản ghi trên trang</a-select-option>
             </a-select>
+            <div class="pagination d-flex">
+               <div class="icon-pagination-first"></div>
+               <div class="icon-left"></div>
+               <div><strong>4</strong></div>
+               <div>đến</div>
+               <div><strong>26</strong></div>
 
+               <div class="icon-right"></div>
+               <div class="icon-pagination-end"></div>
+            </div>
          </div>
       </div>
    </div>
@@ -61,7 +69,7 @@
 
 <script setup>
 import { defineProps, ref } from "vue";
-import 'primevue/resources/themes/saga-blue/theme.css'; // Chỉ cho component này
+import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
 import 'primeicons/primeicons.css';
 
@@ -97,6 +105,14 @@ const selectedProducts = ref();
    /* dễ kéo hơn mặc định */
 }
 
+.p-datatable {
+   min-width: 100%;
+}
+
+.p-datatable-wrapper {
+   min-width: 100%;
+}
+
 /* Footer */
 .footer {
    border-top: 1px solid #d3d7de;
@@ -119,8 +135,6 @@ const selectedProducts = ref();
    font-size: 13px;
 }
 
-
-
 .p-datatable .p-column-header-content {
    box-sizing: border-box;
    padding: 10px 10px 10px 14px;
@@ -130,14 +144,26 @@ const selectedProducts = ref();
    box-sizing: border-box;
    padding: 10px 10px 10px 14px;
    text-overflow: ellipsis !important;
+   overflow: hidden !important;
+   white-space: nowrap !important;
+   min-width: 0;
+}
+
+.ellipsis {
+   display: block;
+   width: 100%;
+   overflow: hidden;
+   white-space: nowrap;
+   text-overflow: ellipsis;
 }
 
 .p-checkbox .p-checkbox-box {
    width: 16px !important;
    height: 16px !important;
    margin: 3px 0 3px 0;
-   border: 2px solid #7c869c;
+   border: 1px solid #7c869c;
    outline: none;
+   border-radius: 4px;
 }
 
 .p-datatable .p-datatable-tbody>tr:hover {
@@ -161,7 +187,9 @@ const selectedProducts = ref();
    opacity: 1;
 }
 
-.item-total-row-page {
-   line-height: 1.5;
+
+.pagination {
+   margin-left: 20px;
+   gap: 10px;
 }
 </style>
