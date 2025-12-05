@@ -50,9 +50,19 @@ namespace MISA.CRM.CORE.Interfaces.Repositories
         /// </summary>
         /// <param name="id"> id của bản ghi mình muốn cập nhật</param>
         /// <param name="entity">thuộc tính của thực thể</param>
-        /// <returns>số dòng bị ảnh hưuongr</returns>
+        /// <returns>Guid của dòng vừa thêm</returns>
         /// Created By: TMHieu (03/12/2025)
-        Task<int> UpdateAsync(Guid id, T entity);
+        Task<Guid> UpdateAsync(Guid id, T entity);
+
+        /// <summary>
+        /// Hàm cập nhật 1 cột thành các giá trị giống nhau của nhiều bản ghi theo id
+        /// </summary>
+        /// <param name="ids"> danh sách id của bản ghi mình muốn cập nhật</param>
+        /// <param name="columnName">Cột cần cập nhật hàng loạt</param>
+        /// param name="value">Giá trị mới cần cập nhật</param>
+        /// <returns>Guid của dòng vừa thêm</returns>
+        /// Created By: TMHieu (03/12/2025)
+        Task<int> BulkUpdateSameValueAsync(List<Guid> ids, string columnName, object value);
 
         /// <summary>
         /// xóa mềm 1 bản ghi trong database
@@ -61,5 +71,15 @@ namespace MISA.CRM.CORE.Interfaces.Repositories
         /// <returns>số dòng bị ảnh hưởng </returns>
         /// Created By: TMHieu (03/12/2025)
         Task<int> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// Kiểm tra giá trị có tồn tại trong cột (bỏ qua soft delete và ignoreId nếu có).
+        /// Created by: TMHieu (05/12/2025)
+        /// </summary>
+        /// <param name="columnName">Tên cột cần kiểm tra.</param>
+        /// <param name="value">Giá trị cần kiểm tra.</param>
+        /// <param name="ignoreId">ID cần bỏ qua (tùy chọn).</param>
+        /// <returns>True nếu tồn tại, False nếu không.</returns>
+        Task<bool> IsValueExistAsync(string columnName, object value, Guid? ignoreId = null);
     }
 }
