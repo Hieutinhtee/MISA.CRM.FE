@@ -62,7 +62,7 @@ const cols = [
     { field: "taxCode", header: "Mã số thuế", width: 160 },
     { field: "shippingAddress", header: "Địa chỉ (Giao hàng)", width: 210 },
     { field: "phone", header: "Điện thoại", width: 160 },
-    { field: "lastPurchaseDate", header: "Ngày mua hàng gần nhất", width: 240 },
+    { field: "lastPurchaseDate", header: "Ngày mua hàng gần nhất", width: 240, type: "date" },
     { field: "lastPurchasedItemCode", header: "Hàng hóa đã mua", width: 200 },
     { field: "lastPurchasedItemName", header: "Tên hàng hóa đã mua", width: 300 }
 ];

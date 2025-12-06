@@ -14,15 +14,17 @@
 
                   <div v-else-if="col.field === 'phone'" class="d-flex">
                      <i class="icon-phone"></i>
-                     <MsTextColor>{{ slotProps.data[col.field] }}</MsTextColor>
+                     <MsTextColor>{{ handleFormat(slotProps.data[col.field], col.type) }}
+                     </MsTextColor>
                   </div>
 
                   <div v-else-if="col.field === 'customerCode' || col.field === 'fullName'">
-                     <MsTextColor>{{ slotProps.data[col.field] }}</MsTextColor>
+                     <MsTextColor>{{ handleFormat(slotProps.data[col.field], col.type) }}
+                     </MsTextColor>
                   </div>
 
                   <div v-else>
-                     {{ slotProps.data[col.field] }}
+                     {{ handleFormat(slotProps.data[col.field], col.type) }}
                   </div>
                </div>
             </template>
@@ -68,7 +70,7 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from "vue";
+import { defineProps, ref, watch } from "vue";
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
 import 'primeicons/primeicons.css';
@@ -77,6 +79,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 
 import MsTextColor from '@/components/ms-button/MsTextColor.vue';
+import { formatNumber, formatDate, formatText } from '@/utils/formatter.js';
 
 const pageSize = ref(100);
 
@@ -84,7 +87,15 @@ const props = defineProps({
    /** danh sách cột */
    columns: {
       type: Array,
-      required: true
+      required: true,
+      validator: (value) => {
+         return value.every(col => {
+            const validTypes = ['text', 'number', 'date', 'custom'];
+            return col.field &&
+               col.header &&
+               validTypes.includes(col.type || 'text');
+         });
+      }
    },
 
    /** danh sách dữ liệu */
@@ -97,6 +108,21 @@ const props = defineProps({
 });
 
 const selectedProducts = ref();
+
+watch(selectedProducts, () => console.log(selectedProducts));
+
+const handleFormat = (value, type) => {
+   switch (type) {
+      case 'number':
+         return formatNumber(value);
+      case 'date':
+         return formatDate(value);
+      case 'text':
+         return formatText(value);
+      default:
+         return formatText(value);
+   }
+};
 </script>
 
 <style>

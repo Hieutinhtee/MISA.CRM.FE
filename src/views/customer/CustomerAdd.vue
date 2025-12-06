@@ -22,25 +22,31 @@
       <div class="d-flex">
          <div class="form-body">
             <div class="d-flex w-100 gap80">
-               <ms-input-text label="Mã khách hàng" :column="false" readonly></ms-input-text>
-               <ms-input-text label="Loại khách hàng" :column="false"></ms-input-text>
+               <ms-input-text label="Mã khách hàng" :column="false" readonly
+                  v-model="formData.customerCode"></ms-input-text>
+               <ms-input-text label="Loại khách hàng" :column="false" v-model="formData.customerType"></ms-input-text>
             </div>
             <div class="d-flex w-100 gap80">
-               <ms-input-text label="Tên khách hàng" :column="false" required></ms-input-text>
-               <ms-input-text label="Mã số thuế" :column="false"></ms-input-text>
+               <ms-input-text label="Tên khách hàng" :column="false" v-model="formData.fullName"
+                  required></ms-input-text>
+               <ms-input-text label="Mã số thuế" :column="false" v-model="formData.taxCode"></ms-input-text>
             </div>
             <div class="d-flex w-100 gap80">
-               <ms-input-text label="Email" :column="false"></ms-input-text>
-               <ms-input-text label="Số điện thoại" :column="false"></ms-input-text>
+               <ms-input-text label="Email" :column="false" v-model="formData.email"></ms-input-text>
+               <ms-input-text label="Số điện thoại" :column="false" v-model="formData.phone"></ms-input-text>
             </div>
             <div class="d-flex w-100 gap80">
-               <ms-input-text label="Địa chỉ liên hệ" :column="false"></ms-input-text>
-               <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"></ms-input-text>
+               <ms-input-text label="Địa chỉ liên hệ" :column="false" v-model="formData.address"></ms-input-text>
+               <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
+                  v-model="formData.shippingAddress"></ms-input-text>
             </div>
             <div class="d-flex w-100 gap80">
-               <ms-input-text label="Ngày mua gần nhất" :column="false"></ms-input-text>
-               <ms-input-text label="Tên hàng hóa đã mua" :column="false"></ms-input-text>
+               <ms-input-text label="Ngày mua gần nhất" :column="false"
+                  v-model="formData.lastPurchaseDate"></ms-input-text>
+               <ms-input-text label="Tên hàng hóa đã mua" :column="false"
+                  v-model="formData.lastPurchasedItemName"></ms-input-text>
             </div>
+            <div>{{ formData }}</div>
          </div>
       </div>
    </div>
@@ -51,6 +57,22 @@
 import MsTextColor from '@/components/ms-button/MsTextColor.vue';
 import MsButton from '@/components/ms-button/MsButton.vue';
 import MsInputText from '../../components/ms-input/MsInputText.vue';
+import { ref } from 'vue';
+
+const formData = ref({
+   customerCode: '',  // Giá trị mặc định, có thể fetch từ API
+   customerType: '',
+   customerName: '',
+   taxCode: '',
+   email: '',
+   phone: '',
+   contactAddress: '',
+   deliveryAddress: '',
+   lastPurchaseDate: '',
+   purchasedItems: ''
+});
+
+
 </script>
 
 <style scoped>
