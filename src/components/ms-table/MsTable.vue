@@ -1,7 +1,7 @@
 <template>
    <div class="table-content d-flex flex1 flex-column">
       <DataTable :value="rows" scrollable scrollHeight="100%" resizableColumns columnResizeMode="expand"
-         class="prime-table flex1" v-model:selection="selectedProducts">
+         class="prime-table flex1" dataKey="customerId" selectionMode="checkbox" v-model:selection="selectedProducts">
          <Column selectionMode="multiple" :frozen="true"></Column>
          <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" :sortable="true"
             :style="col.width ? {
@@ -17,7 +17,7 @@
                      <MsTextColor>{{ slotProps.data[col.field] }}</MsTextColor>
                   </div>
 
-                  <div v-else-if="col.field === 'customerCode' || col.field === 'customerName'">
+                  <div v-else-if="col.field === 'customerCode' || col.field === 'fullName'">
                      <MsTextColor>{{ slotProps.data[col.field] }}</MsTextColor>
                   </div>
 
