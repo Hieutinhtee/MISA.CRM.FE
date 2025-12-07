@@ -4,7 +4,7 @@ import BaseAPI from '@/apis/base/BaseAPI.js';
 class CustomersAPI extends BaseAPI {
    constructor() {
       super();
-      this.controler = "Customers";
+      this.controller = "Customers";
    }
 
    /**
@@ -15,6 +15,15 @@ class CustomersAPI extends BaseAPI {
     */
    checkDuplicate(payload) {
       return api.post(`${this.controller}/check-duplicate`, payload);
+   }
+
+   /**
+    * Hàm lấy mã khách hàng tự sinh
+    * @returns {string} mã khách hàng
+    * createdby: TMHieu - 6.12.2025
+    */
+   getNextCustomerCode() {
+      return api.get(`${this.controller}/next-code`);
    }
 
 

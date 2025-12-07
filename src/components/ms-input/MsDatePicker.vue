@@ -1,18 +1,37 @@
 <template>
-   <div class="d-flex flex-column flex1">
-      <label :for="label">{{ label }}</label>
-      <a-space class="d-block">
-         <a-date-picker :format="dateFormatList" class="d-block" :placeholder="placeholder || label" />
-      </a-space>
-   </div>
-
+   <a-space>
+      <a-date-picker v-model="model" class="d-block" :format="dateFormatList" :placeholder="placeholder || label" />
+   </a-space>
 </template>
 
 
 <script setup>
+import { defineModel } from 'vue';
+
 const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY'];
 const props = defineProps({
    label: String,
    placeholder: String
 });
+
+const model = defineModel()
 </script>
+
+<style>
+.ant-space {
+   height: 32px;
+   flex: 1 1 550px;
+   min-width: 0px;
+   transition: all 0.2s;
+
+}
+
+.ant-space-item {
+
+   width: 100%;
+}
+
+.ant-picker {
+   border-radius: 4px !important;
+}
+</style>

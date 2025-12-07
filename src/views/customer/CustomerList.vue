@@ -42,8 +42,22 @@ import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
 
 CustomersAPI.getAll().then(res => {
     data.value = res.data.data;
-    console.log(data);
-})
+});
+
+const payload = {
+    page: 1,
+    pageSize: 2,
+    search: "",
+    sortBy: "",
+    sortOrder: ""
+};
+
+
+CustomersAPI.paging(payload).then(result => {
+    console.log(result.data); // dữ liệu
+    console.log(result); // meta { page, pageSize, total }
+});
+
 
 
 
@@ -56,15 +70,15 @@ function goToAdd() {
 
 // Columns
 const cols = [
-    { field: "customerType", header: "Loại khách hàng", width: 175 },
-    { field: "customerCode", header: "Mã khách hàng", width: 280 },
-    { field: "fullName", header: "Tên khách hàng", width: 300 },
-    { field: "taxCode", header: "Mã số thuế", width: 160 },
-    { field: "shippingAddress", header: "Địa chỉ (Giao hàng)", width: 210 },
-    { field: "phone", header: "Điện thoại", width: 160 },
-    { field: "lastPurchaseDate", header: "Ngày mua hàng gần nhất", width: 240, type: "date" },
-    { field: "lastPurchasedItemCode", header: "Hàng hóa đã mua", width: 200 },
-    { field: "lastPurchasedItemName", header: "Tên hàng hóa đã mua", width: 300 }
+    { field: "crmCustomerType", header: "Loại khách hàng", width: 175 },
+    { field: "crmCustomerCode", header: "Mã khách hàng", width: 280 },
+    { field: "crmCustomerName", header: "Tên khách hàng", width: 300 },
+    { field: "crmCustomerTaxCode", header: "Mã số thuế", width: 160 },
+    { field: "crmCustomerShippingAddress", header: "Địa chỉ (Giao hàng)", width: 210 },
+    { field: "crmCustomerPhoneNumber", header: "Điện thoại", width: 160 },
+    { field: "crmCustomerLastPurchaseDate", header: "Ngày mua hàng gần nhất", width: 240, type: "date" },
+    { field: "crmCustomerPurchasedItemCode", header: "Hàng hóa đã mua", width: 200 },
+    { field: "crmCustomerPurchasedItemName", header: "Tên hàng hóa đã mua", width: 300 }
 ];
 
 // Sample Data

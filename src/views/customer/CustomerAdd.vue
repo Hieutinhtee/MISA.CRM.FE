@@ -21,32 +21,33 @@
       <div class="title-form title-info">Thông tin chung</div>
       <div class="d-flex">
          <div class="form-body">
-            <div class="d-flex w-100 gap80">
-               <ms-input-text label="Mã khách hàng" :column="false" readonly
-                  v-model="formData.customerCode"></ms-input-text>
-               <ms-input-text label="Loại khách hàng" :column="false" v-model="formData.customerType"></ms-input-text>
-            </div>
-            <div class="d-flex w-100 gap80">
-               <ms-input-text label="Tên khách hàng" :column="false" v-model="formData.fullName"
-                  required></ms-input-text>
-               <ms-input-text label="Mã số thuế" :column="false" v-model="formData.taxCode"></ms-input-text>
-            </div>
-            <div class="d-flex w-100 gap80">
-               <ms-input-text label="Email" :column="false" v-model="formData.email"></ms-input-text>
-               <ms-input-text label="Số điện thoại" :column="false" v-model="formData.phone"></ms-input-text>
-            </div>
-            <div class="d-flex w-100 gap80">
-               <ms-input-text label="Địa chỉ liên hệ" :column="false" v-model="formData.address"></ms-input-text>
-               <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
-                  v-model="formData.shippingAddress"></ms-input-text>
-            </div>
-            <div class="d-flex w-100 gap80">
-               <ms-input-text label="Ngày mua gần nhất" :column="false"
-                  v-model="formData.lastPurchaseDate"></ms-input-text>
-               <ms-input-text label="Tên hàng hóa đã mua" :column="false"
-                  v-model="formData.lastPurchasedItemName"></ms-input-text>
-            </div>
             <div>{{ formData }}</div>
+
+            <div class="d-flex gap80">
+               <div class="flex-item">
+                  <ms-input-text label="Mã khách hàng" :column="false" readonly
+                     v-model="formData.customerCode"></ms-input-text>
+                  <ms-input-text label="Tên khách hàng" :column="false" v-model="formData.fullName"
+                     required></ms-input-text>
+                  <ms-input-text label="Email" :column="false" v-model="formData.email"></ms-input-text>
+                  <ms-input-text label="Địa chỉ liên hệ" :column="false" v-model="formData.address"></ms-input-text>
+                  <ms-input-text label="Ngày mua gần nhất" :column="false" v-model="formData.lastPurchaseDate"
+                     :type="'date'">
+                  </ms-input-text>
+               </div>
+               <div class="flex-item">
+                  <ms-input-text label="Loại khách hàng" :column="false" v-model="formData.customerType"
+                     :options="customerTypeOption" :type="'select'"></ms-input-text>
+                  <ms-input-text label="Mã số thuế" :column="false" v-model="formData.taxCode"></ms-input-text>
+                  <ms-input-text label="Số điện thoại" :column="false" v-model="formData.phone"></ms-input-text>
+                  <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
+                     v-model="formData.shippingAddress"></ms-input-text>
+                  <ms-input-text label="Tên hàng hóa đã mua" :column="false"
+                     v-model="formData.lastPurchasedItemName"></ms-input-text>
+               </div>
+            </div>
+
+
          </div>
       </div>
    </div>
@@ -57,7 +58,7 @@
 import MsTextColor from '@/components/ms-button/MsTextColor.vue';
 import MsButton from '@/components/ms-button/MsButton.vue';
 import MsInputText from '../../components/ms-input/MsInputText.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const formData = ref({
    customerCode: '',  // Giá trị mặc định, có thể fetch từ API
@@ -72,7 +73,33 @@ const formData = ref({
    purchasedItems: ''
 });
 
+const customerTypeOption = ref([
+   { value: 'NBH01', label: 'NBH01' },
+   { value: 'LKHA', label: 'LKHA' },
+   { value: 'VIP', label: 'VIP' }
+]);
 
+// API
+import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
+
+
+function fetchCustomerCode() {
+   CustomersAPI.getNextCustomerCode()
+      .then(res => {
+         if (res.status === 200) {
+            formData.value.customerCode = res.data.customerCode;
+         } else {
+            console.error("API error:", res.status);
+         }
+      })
+      .catch(err => {
+         console.error("Fetch error:", err);
+      });
+}
+
+onMounted(() => {
+   fetchCustomerCode(); // Gọi khi component mount
+});
 </script>
 
 <style scoped>
@@ -128,5 +155,28 @@ const formData = ref({
 
 .form-body {
    flex-basis: 1420px;
+}
+
+.flex-item {
+   flex: 1 1 200px;
+   /* flex-grow | flex-shrink | flex-basis */
+   min-width: 100px;
+}
+
+.ant-space {
+   height: 32px;
+   flex: 1 1 550px;
+   min-width: 0px;
+   transition: all 0.2s;
+
+}
+
+.ant-space-item {
+
+   width: 100%;
+}
+
+.ant-picker {
+   border-radius: 4px !important;
 }
 </style>

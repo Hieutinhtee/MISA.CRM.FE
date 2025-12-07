@@ -2,14 +2,14 @@ import api from '@/apis/config/APIConfig.js';
 
 export default class BaseAPI {
     constructor() {
-        this.controler = null;
+        this.controller = null;
     }
     /**
      * Phương thức lấy tất cả dữ liệu
      * createdby: TMHieu - 6.12.2025
      */
     getAll() {
-        return api.get(`${this.controler}`);
+        return api.get(`${this.controller}`);
     }
     /**
      * Hàm lấy dữ liệu phân trang
@@ -17,7 +17,7 @@ export default class BaseAPI {
      * createdby: TMHieu - 6.12.2025
      */
     paging(payload) {
-        return api.post(`${this.controler}/paging`, payload);
+        return api.get(`${this.controller}/paging`, { params: payload });
     }
     /**
      * Hàm cập nhật dữ liệu
@@ -26,7 +26,7 @@ export default class BaseAPI {
      * createdby: TMHieu - 6.12.2025
      */
     update(id, body) {
-        return api.put(`${this.controler}/update/${id}`, body);
+        return api.put(`${this.controller}/update/${id}`, body);
     }
     /**
      * Hàm xóa bản ghi
@@ -34,6 +34,6 @@ export default class BaseAPI {
      * createdby: TMHieu - 6.12.2025
      */
     delete(id) {
-        return api.delete(`${this.controler}/delete/${id}`);
+        return api.delete(`${this.controller}/delete/${id}`);
     }
 }

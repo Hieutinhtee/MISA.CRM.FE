@@ -12,13 +12,13 @@
                <div class="ellipsis" :title="slotProps.data[col.field]">
                   <div v-if="!slotProps.data[col.field]">-</div>
 
-                  <div v-else-if="col.field === 'phone'" class="d-flex">
+                  <div v-else-if="col.field === 'crmCustomerPhoneNumber'" class="d-flex">
                      <i class="icon-phone"></i>
                      <MsTextColor>{{ handleFormat(slotProps.data[col.field], col.type) }}
                      </MsTextColor>
                   </div>
 
-                  <div v-else-if="col.field === 'customerCode' || col.field === 'fullName'">
+                  <div v-else-if="col.field === 'crmCustomerCode' || col.field === 'crmCustomerName'">
                      <MsTextColor>{{ handleFormat(slotProps.data[col.field], col.type) }}
                      </MsTextColor>
                   </div>

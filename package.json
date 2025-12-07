@@ -16,7 +16,7 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
-    "ant-design-vue": "^4.2.6",
+    "ant-design-vue": "^4.0.0-rc.6",
     "axios": "^1.13.2",
     "primeicons": "^7.0.0",
     "primevue": "^3.53.1",
