@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 using MISA.CRM.CORE.Attributes;
 
 namespace MISA.CRM.CORE.Entities
 {
     /// <summary>
     /// Đối tượng khách hàng
-    /// Created by: TMHieu  03/12/2025
+    /// Created by: TMHieu 03/12/2025
     /// </summary>
     [TableName("crm_customer")]
     public class Customer
@@ -21,113 +17,104 @@ namespace MISA.CRM.CORE.Entities
         /// </summary>
         [Key]
         [Column("crm_customer_id")]
-        public Guid CustomerId { get; set; }
+        public Guid CrmCustomerId { get; set; }
 
         /// <summary>
-        /// Loại khách hàng: NBH01, LKHA, VIP
+        /// Loại khách hàng
         /// </summary>
         [Required]
+        [MaxLength(20)]
         [Column("crm_customer_type")]
-        [MaxLength(20)]
-        public string CustomerType { get; set; }
+        public string CrmCustomerType { get; set; }
 
         /// <summary>
-        /// Mã khách hàng: KHyyyyMM + 6 số tăng mãi, không reset
+        /// Mã khách hàng
         /// </summary>
         [Required]
+        [MaxLength(20)]
         [Column("crm_customer_code")]
-        [MaxLength(20)]
-        public string CustomerCode { get; set; }
+        public string CrmCustomerCode { get; set; }
 
         /// <summary>
-        /// Tên đầy đủ khách hàng (cá nhân hoặc công ty)
+        /// Tên đầy đủ khách hàng
         /// </summary>
         [Required]
-        [Column("crm_customer_name")]
         [MaxLength(500)]
-        public string FullName { get; set; }
+        [Column("crm_customer_name")]
+        public string CrmCustomerName { get; set; }
 
         /// <summary>
-        /// Số điện thoại - duy nhất
+        /// Số điện thoại
         /// </summary>
         [Required]
-        [Column("crm_customer_phone_number")]
         [MaxLength(50)]
-        public string Phone { get; set; }
+        [Column("crm_customer_phone_number")]
+        public string CrmCustomerPhoneNumber { get; set; }
 
         /// <summary>
-        /// Email - duy nhất
+        /// Email
         /// </summary>
         [Required]
-        [Column("crm_customer_email")]
         [MaxLength(100)]
-        public string Email { get; set; }
+        [Column("crm_customer_email")]
+        public string CrmCustomerEmail { get; set; }
 
         /// <summary>
         /// Địa chỉ liên hệ chính
         /// </summary>
         [Required]
-        [Column("crm_customer_address")]
         [MaxLength(255)]
-        public string Address { get; set; }
+        [Column("crm_customer_address")]
+        public string CrmCustomerAddress { get; set; }
 
         /// <summary>
         /// Địa chỉ giao hàng
         /// </summary>
         [Required]
-        [Column("crm_customer_shipping_address")]
         [MaxLength(255)]
-        public string ShippingAddress { get; set; }
+        [Column("crm_customer_shipping_address")]
+        public string CrmCustomerShippingAddress { get; set; }
 
         /// <summary>
         /// Mã số thuế
         /// </summary>
         [Required]
-        [Column("crm_customer_tax_code")]
         [MaxLength(20)]
-        public string TaxCode { get; set; }
+        [Column("crm_customer_tax_code")]
+        public string CrmCustomerTaxCode { get; set; }
 
         /// <summary>
-        /// Ngày mua hàng gần nhất
+        /// Ngày mua gần nhất
         /// </summary>
         [Column("crm_customer_last_purchase_date")]
-        public DateTime? LastPurchaseDate { get; set; }
+        public DateTime? CrmCustomerLastPurchaseDate { get; set; }
 
         /// <summary>
-        /// Mã hàng hóa mua gần nhất (mock)
+        /// Mã hàng hóa mua gần nhất
         /// </summary>
-        [Column("crm_customer_purchased_item_code")]
         [MaxLength(20)]
-        public string LastPurchasedItemCode { get; set; }
+        [Column("crm_customer_purchased_item_code")]
+        public string CrmCustomerPurchasedItemCode { get; set; }
 
         /// <summary>
         /// Tên hàng hóa mua gần nhất
         /// </summary>
-        [Column("crm_customer_purchased_item_name")]
         [MaxLength(100)]
-        public string LastPurchasedItemName { get; set; }
+        [Column("crm_customer_purchased_item_name")]
+        public string CrmCustomerPurchasedItemName { get; set; }
 
         /// <summary>
         /// Đường dẫn ảnh đại diện
         /// </summary>
-        [Column("crm_customer_image")]
         [MaxLength(255)]
-        public string ImageUrl { get; set; }
+        [Column("crm_customer_image")]
+        public string CrmCustomerImage { get; set; }
 
         /// <summary>
         /// Trạng thái xóa mềm
         /// </summary>
         [Required]
         [Column("crm_customer_is_deleted")]
-        public bool IsDeleted { get; set; } = false;
-
-        //sẽ thêm sau này
-        //public DateTime CreatedDate { get; set; } = DateTime.Now;
-
-        //public DateTime ModifiedDate { get; set; } = DateTime.Now;
-
-        //public String CreatedBy { get; set; };
-
-        //public String ModifiedBy { get; set; };
+        public bool CrmCustomerIsDeleted { get; set; } = false;
     }
 }

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\" />
+    <Folder Include="DTOs\Requests\" />
   </ItemGroup>
 
 </Project>

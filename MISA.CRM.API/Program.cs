@@ -26,6 +26,7 @@ builder.Services.AddSingleton<MySqlConnectionFactory>(
 );
 
 // Đăng ký Repository
+
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 // Đăng ký Service

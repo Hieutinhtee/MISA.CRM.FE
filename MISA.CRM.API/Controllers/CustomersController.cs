@@ -1,91 +1,29 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MISA.CRM.CORE.Entities;
 using MISA.CRM.CORE.Exceptions;
+using MISA.CRM.CORE.Interfaces.Repositories;
 using MISA.CRM.CORE.Interfaces.Services;
+using MISA.CRM.CORE.Services;
 
 namespace MISA.CRM.API.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class CustomersController : ControllerBase
+    public class CustomersController : BaseController<Customer>
     {
-        private readonly ICustomerService _service;
+        private readonly ICustomerService _customerService;
 
-        public CustomersController(ICustomerService service)
+        public CustomersController(ICustomerService customerService)
+            : base(customerService)
         {
-            _service = service;
+            _customerService = customerService;
         }
 
-        // GET: api/customers
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("next-code")]
+        public async Task<IActionResult> GetNextCode()
         {
-            var data = await _service.GetAllAsync();
-            return Ok(new { data });
-        }
-
-        // GET: api/customers/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            try
-            {
-                var customer = await _service.GetByIdAsync(id);
-                return Ok(new { data = customer });
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-        }
-
-        // POST: api/customers
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Customer customer)
-        {
-            try
-            {
-                var newId = await _service.CreateAsync(customer);
-                return StatusCode(201, new { id = newId, message = "Tạo khách hàng thành công" });
-            }
-            catch (ValidateException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-        }
-
-        // PUT: api/customers/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] Customer customer)
-        {
-            try
-            {
-                var rows = await _service.UpdateAsync(id, customer);
-                return Ok(new { updated = rows, message = "Cập nhật thành công" });
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (ValidateException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-        }
-
-        // DELETE: api/customers/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            try
-            {
-                var rows = await _service.DeleteAsync(id);
-                return Ok(new { deleted = rows, message = "Xóa thành công" });
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
+            var code = await _customerService.NextCodeAsync();
+            return Ok(new { CustomerCode = code });
         }
     }
 }

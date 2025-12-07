@@ -10,6 +10,7 @@ using MISA.CRM.Infrastructure.Connection;
 using MISA.CRM.CORE.Attributes;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MISA.CRM.Core.DTOs.Responses;
 
 namespace MISA.CRM.Infrastructure.Repositories
 {
@@ -39,35 +40,37 @@ namespace MISA.CRM.Infrastructure.Repositories
         /// Created by: TMHieu (05/12/2025)
         /// </summary>
         /// <param name="factory">Factory tạo MySqlConnection (bắt buộc, không được null)</param>
-        /// <param name="idColumn">Tên cột khóa chính nếu không phải Id (ví dụ: CustomerId). Mặc định là null để dùng Id.</param>
+
         protected BaseRepository(MySqlConnectionFactory factory)
         {
-            // Kiểm tra factory không null để tránh lỗi runtime
+            // 1. Check factory trước (ưu tiên tránh lỗi runtime)
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
 
-            // Ưu tiên lấy tên bảng từ attribute [TableName("...")]
-            var tableAttr = typeof(T).GetCustomAttribute<TableNameAttribute>();
-            _tableName = tableAttr != null ? tableAttr.Name : "crm_" + ToSnakeCase(typeof(T).Name);
+            var type = typeof(T);
 
-            RegisterTypeMap<T>();
+            // 2. Lấy tên bảng qua attribute TableName
+            var tableAttr = type.GetCustomAttribute<TableNameAttribute>();
+            _tableName = tableAttr?.Name ?? ToSnakeCase(type.Name);
 
-            _softKeyDelete = "crm_" + ToSnakeCase(typeof(T).Name) + "_is_deleted";
-            //Lấy tên Id từ property có attribute [Key]
-            var keyProp = typeof(T)
-                        .GetProperties()
-                        .FirstOrDefault(p => p.GetCustomAttribute<KeyAttribute>() != null);
+            // 3. Tạo soft delete key: "crm_customer_is_deleted"
+            _softKeyDelete = _tableName + "_is_deleted";
+
+            // 4. Lấy property Key
+            var keyProp = type.GetProperties()
+                              .FirstOrDefault(p => p.GetCustomAttribute<KeyAttribute>() != null);
 
             if (keyProp == null)
             {
-                _idColumn = "crm_" + ToSnakeCase(typeof(T).Name) + "_id";
+                throw new Exception(
+                    $"Entity {type.Name} phải có [Key] attribute trên 1 property.");
             }
-            else
-            {
-                //Lấy ColumnName từ attribute nếu có
-                var colAttr = keyProp.GetCustomAttribute<ColumnAttribute>();
 
-                _idColumn = colAttr != null ? colAttr.Name : keyProp.Name;
-            }
+            // 5. Lấy tên cột ID (cột DB)
+            var colAttr = keyProp.GetCustomAttribute<ColumnAttribute>();
+
+            // Nếu có attribute [Column("crm_customer_id")] → dùng tên cột
+            // Nếu không có → dùng tên property
+            _idColumn = colAttr?.Name ?? ToSnakeCase(keyProp.Name);
         }
 
         /// <summary>
@@ -97,26 +100,6 @@ namespace MISA.CRM.Infrastructure.Repositories
             return result;
         }
 
-        public static void RegisterTypeMap<T>()
-        {
-            SqlMapper.SetTypeMap(
-                typeof(T),
-                new CustomPropertyTypeMap(
-                    typeof(T),
-                    (type, columnName) =>
-                    {
-                        return type.GetProperties()
-                            .FirstOrDefault(prop =>
-                            {
-                                var attr = prop.GetCustomAttributes(typeof(ColumnAttribute), true)
-                                              .OfType<ColumnAttribute>()
-                                              .FirstOrDefault();
-                                return attr != null && attr.Name == columnName;
-                            });
-                    })
-            );
-        }
-
         /// <summary>
         /// Property để lấy connection từ factory.
         /// Mỗi lần gọi sẽ tạo mới connection để tránh reuse sai.
@@ -131,6 +114,14 @@ namespace MISA.CRM.Infrastructure.Repositories
         /// </summary>
         /// <returns>HashSet các tên cột hợp lệ.</returns>
         protected abstract HashSet<string> GetSortableFields();
+
+        /// <summary>
+        /// Phương thức abstract để lấy danh sách các trường hợp lệ cho sort (whitelist để tránh SQL injection).
+        /// Phải override ở repository con.
+        /// Created by: TMHieu (05/12/2025)
+        /// </summary>
+        /// <returns>HashSet các tên cột hợp lệ.</returns>
+        protected abstract HashSet<string> GetSearchFields();
 
         /// <summary>
         /// Lấy tất cả entity.
@@ -261,21 +252,24 @@ namespace MISA.CRM.Infrastructure.Repositories
         {
             using var conn = Connection;
 
-            // Lấy tên cột thực trong DB qua ColumnAttribute
+            // Tìm property có ColumnAttribute khớp với columnName
             var prop = typeof(T).GetProperties()
                 .FirstOrDefault(p =>
-                    p.Name.Equals(columnName, StringComparison.OrdinalIgnoreCase));
+                    p.GetCustomAttribute<ColumnAttribute>()?.Name
+                    .Equals(columnName, StringComparison.OrdinalIgnoreCase) == true);
 
             if (prop == null)
-                throw new Exception($"Property '{columnName}' không tồn tại trên entity.");
+                throw new Exception($"Column '{columnName}' không tồn tại trong entity {typeof(T).Name}.");
 
-            var colAttr = prop.GetCustomAttribute<ColumnAttribute>();
-            var dbColumn = colAttr != null ? colAttr.Name : columnName;
+            // Lấy tên cột thật trong DB
+            var dbColumnName = prop.GetCustomAttribute<ColumnAttribute>()?.Name
+                               ?? ToSnakeCase(prop.Name);
 
-            var sql = $@" UPDATE {_tableName}
-                          SET {dbColumn} = @Value
-                          WHERE {_idColumn} IN @Ids
-                          AND {_softKeyDelete} = 0;";
+            var idColumn = _idColumn; // đã set trong constructor
+
+            // SQL UPDATE
+            var sql =
+                $"UPDATE {_tableName} SET {dbColumnName} = @Value WHERE {idColumn} IN @Ids";
 
             var parameters = new DynamicParameters();
             parameters.Add("@Value", value);
@@ -296,72 +290,6 @@ namespace MISA.CRM.Infrastructure.Repositories
             // SQL UPDATE để xóa mềm (set is_deleted = 1)
             var sql = $"UPDATE {_tableName} SET {_softKeyDelete} = 1 WHERE {_idColumn} = @Id AND {_softKeyDelete} = 0";
             return await conn.ExecuteAsync(sql, new { Id = id });
-        }
-
-        /// <summary>
-        /// Lấy tất cả entity với sort .
-        /// Sử dụng whitelist từ GetSortableFields để tránh SQL injection.
-        /// Created by: TMHieu (05/12/2025)
-        /// </summary>
-        /// <param name="sortField">Tên cột sort (phải hợp lệ).</param>
-        /// <param name="asc">True nếu ASC, false nếu DESC. Mặc định true.</param>
-        /// <returns>Danh sách entity đã sort.</returns>
-        public virtual async Task<List<T>> GetAllSortedAsync(string sortField, bool asc = true)
-        {
-            // Lấy whitelist sortable fields
-            var valid = GetSortableFields();
-            // Kiểm tra sortField hợp lệ
-            if (string.IsNullOrWhiteSpace(sortField) || !valid.Contains(sortField))
-                throw new ArgumentException("Không được để trống cột cần sắp xếp.");
-            // Xây dựng ORDER BY
-            var order = asc ? "ASC" : "DESC";
-            using var conn = Connection;
-            // SQL với ORDER BY và chỉ lấy chưa xóa
-            var sql = $"SELECT * FROM {_tableName} WHERE {_softKeyDelete} = 0 ORDER BY {sortField} {order}";
-            var res = await conn.QueryAsync<T>(sql);
-            return res.ToList();
-        }
-
-        /// <summary>
-        /// Lấy entity với paging và sort .
-        /// Trả về tuple (Data, Total) theo quy ước API.
-        /// Created by: TMHieu (05/12/2025)
-        /// </summary>
-        /// <param name="page">Số trang (bắt đầu từ 1).</param>
-        /// <param name="pageSize">Kích thước trang (mặc định 20).</param>
-        /// <param name="sortField">Tên cột sort (tùy chọn, phải hợp lệ).</param>
-        /// <param name="asc">True nếu ASC, false nếu DESC. Mặc định true.</param>
-        /// <returns>Tuple với List<T> và tổng số record.</returns>
-        public virtual async Task<(List<T> Data, int Total)> GetPagingAsync(int page, int pageSize, string? sortField = null, bool asc = true)
-        {
-            // Đảm bảo page và pageSize hợp lệ
-            if (page <= 0) page = 1;
-            if (pageSize <= 0) pageSize = 20;
-            // Tính offset cho LIMIT/OFFSET
-            var offset = (page - 1) * pageSize;
-            // Khởi tạo order clause
-            string orderClause = string.Empty;
-            if (!string.IsNullOrWhiteSpace(sortField))
-            {
-                // Kiểm tra sortField hợp lệ từ whitelist
-                var valid = GetSortableFields();
-                if (!valid.Contains(sortField))
-                    throw new ArgumentException("Invalid sort field.");
-                orderClause = $"ORDER BY {sortField} {(asc ? "ASC" : "DESC")}";
-            }
-            using var conn = Connection;
-            // SQL lấy data với paging và chỉ lấy chưa xóa
-            var sqlData = $"SELECT * FROM {_tableName} WHERE {_softKeyDelete} = 0 {orderClause} LIMIT @Limit OFFSET @Offset";
-            // SQL đếm tổng chỉ tính chưa xóa
-            var sqlCount = $"SELECT COUNT(1) FROM {_tableName} WHERE {_softKeyDelete} = 0";
-            // Chạy parallel để tối ưu
-            var taskData = conn.QueryAsync<T>(sqlData, new { Limit = pageSize, Offset = offset });
-            var taskCount = conn.ExecuteScalarAsync<int>(sqlCount);
-            await Task.WhenAll(taskData, taskCount);
-            // Lấy kết quả
-            var data = (await taskData).ToList();
-            var total = await taskCount;
-            return (data, total);
         }
 
         /// <summary>
@@ -386,30 +314,44 @@ namespace MISA.CRM.Infrastructure.Repositories
         /// Kiểm tra giá trị có tồn tại trong cột (bỏ qua soft delete và ignoreId nếu có).
         /// Created by: TMHieu (05/12/2025)
         /// </summary>
-        /// <param name="columnName">Tên cột cần kiểm tra.</param>
+        /// <param name="propertyOrColumnName">Truyền vào kiểu giống nameof(Customer.Phone) hàm sẽ tự map với tên cột</param>
         /// <param name="value">Giá trị cần kiểm tra.</param>
         /// <param name="ignoreId">ID cần bỏ qua (khi update để tránh trùng chính nó).</param>
         /// <returns>True nếu tồn tại, False nếu không.</returns>
-        public async Task<bool> IsValueExistAsync(string propertyName, object value, Guid? ignoreId = null)
+        public async Task<bool> IsValueExistAsync(string propertyOrColumnName, object value, Guid? ignoreId = null)
         {
             using var conn = Connection;
-            // Lấy thông tin property từ T
-            var prop = typeof(T).GetProperty(propertyName);
+
+            // 1) Tìm property theo ColumnAttribute.Name
+            var prop = typeof(T).GetProperties()
+                .FirstOrDefault(p =>
+                    string.Equals(p.GetCustomAttribute<ColumnAttribute>()?.Name, propertyOrColumnName, StringComparison.OrdinalIgnoreCase));
+
+            // 2) Nếu không tìm thấy, thử tìm theo tên property C#
             if (prop == null)
-                throw new Exception($"Property '{propertyName}' không tồn tại trong {typeof(T).Name}");
+            {
+                prop = typeof(T).GetProperty(propertyOrColumnName,
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            }
 
-            // Lấy ColumnName từ attribute
-            var columnAttr = prop.GetCustomAttribute<ColumnAttribute>();
-            if (columnAttr == null)
-                throw new Exception($"Property '{propertyName}' không có ColumnAttribute");
+            // 3) Nếu vẫn null => báo lỗi rõ ràng
+            if (prop == null)
+                throw new Exception($"Không tìm thấy property hoặc column '{propertyOrColumnName}' trên entity {typeof(T).Name}.");
 
-            var columnName = columnAttr.Name; // Tên cột trong DB
-            var sql = $@"SELECT COUNT(1)
-                         FROM {_tableName}
-                         WHERE {columnName} = @Value
-                         AND {_softKeyDelete} = 0
-                         AND (@IgnoreId IS NULL OR {_idColumn} <> @IgnoreId);";
+            // 4) Lấy tên cột thực trong DB:
+            //    - nếu có [Column("...")] thì dùng attribute
+            //    - nếu không có thì fallback: ToSnakeCase(property.Name)
+            var colAttr = prop.GetCustomAttribute<ColumnAttribute>();
+            var columnName = colAttr?.Name ?? ToSnakeCase(prop.Name);
 
+            // 5) Xây SQL, dùng param để tránh injection
+            var sql = $@" SELECT COUNT(1)
+                          FROM {_tableName}
+                          WHERE {columnName} = @Value
+                          AND {_softKeyDelete} = 0
+                          AND (@IgnoreId IS NULL OR {_idColumn} <> @IgnoreId);";
+
+            // 6) Thực thi và trả về kết quả
             var count = await conn.ExecuteScalarAsync<int>(sql, new
             {
                 Value = value,
@@ -417,6 +359,98 @@ namespace MISA.CRM.Infrastructure.Repositories
             });
 
             return count > 0;
+        }
+
+        /// <summary>
+        /// Hàm trả về danh sách có phân trang, tìm kiếm và sắp xếp
+        /// Created by: TMHieu (07/12/2025)
+        /// </summary>
+        /// <param name="page">Trang thứ mấy</param>
+        /// <param name="pageSize">Số bản ghi một trang.</param>
+        /// <param name="search">Từ khóa tìm kiếm</param>
+        /// <param name="sortBy">cột cần sắp xếp</param>
+        /// <param name="sortOrder">hướng sắp xếp (ASC/DESC)</param>
+        /// <returns>Đối tượng PagingResponse chứa dữ liệu và metadata</returns>
+        public virtual async Task<PagingResponse<T>> QueryPagingAsync(
+            int page,
+            int pageSize,
+            string? search,
+            string? sortBy,
+            string? sortOrder
+        )
+        {
+            using var conn = Connection;
+
+            // 1. Xác định field được sort
+            var sortableFields = GetSortableFields(); // HashSet<string> do repo con override, có thể rỗng
+            var searchFields = GetSearchFields();
+
+            string orderClause = "";
+
+            // Nếu FE truyền sortField
+            if (!string.IsNullOrWhiteSpace(sortBy))
+            {
+                // Nếu repo con không override hoặc whitelist rỗng → cho phép tất cả cột
+                if (sortableFields == null || sortableFields.Count == 0 || sortableFields.Contains(sortBy.ToLower()))
+                {
+                    string direction = sortOrder?.ToUpper() == "DESC" ? "DESC" : "ASC";
+                    orderClause = $" ORDER BY {sortBy} {direction} ";
+                }
+                else
+                {
+                    // sortField không hợp lệ theo whitelist → fallback sort theo khóa chính
+                    orderClause = $" ORDER BY {_idColumn} DESC ";
+                }
+            }
+            else
+            {
+                // FE không truyền sortField → default sort theo khóa chính
+                orderClause = $" ORDER BY {_idColumn} DESC ";
+            }
+
+            // 3. Tạo điều kiện WHERE cơ bản (is_deleted = 0)
+            var where = $" WHERE {_softKeyDelete} = 0 ";
+
+            // 4. Thêm search nếu có
+            if (!string.IsNullOrWhiteSpace(search) && searchFields.Any())
+            {
+                var likeParts = searchFields
+                    .Select(f => $"{f} LIKE @SearchStr");
+
+                // (name LIKE '%a%' OR code LIKE '%a%' OR phone LIKE '%a%')
+                where += " AND (" + string.Join(" OR ", likeParts) + ") ";
+            }
+
+            // 5. Query tổng dòng
+            string sqlCount = $"SELECT COUNT(*) FROM {_tableName} {where};";
+
+            // 6. Query paging
+            string sqlData = $@" SELECT * FROM {_tableName}
+                                 {where}
+                                 {orderClause}
+                                 LIMIT @Offset, @PageSize;";
+
+            var param = new DynamicParameters();
+            param.Add("@SearchStr", $"%{search}%");
+            param.Add("@Offset", (page - 1) * pageSize);
+            param.Add("@PageSize", pageSize);
+
+            // 7. Thực hiện query song song
+            var total = await conn.ExecuteScalarAsync<int>(sqlCount, param);
+            var data = (await conn.QueryAsync<T>(sqlData, param)).ToList();
+
+            // 8. Trả về đúng format FE yêu cầu
+            return new PagingResponse<T>
+            {
+                Data = data,
+                Meta = new Meta
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    Total = total
+                },
+                Error = null
+            };
         }
     }
 }
