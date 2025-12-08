@@ -98,14 +98,15 @@ namespace MISA.CRM.API.Controllers
         }
 
         [HttpGet("paging")]
-        public async Task<PagingResponse<T>> GetPaging([FromQuery] int page = 1, [FromQuery] int pageSize = 10,
-                                                   [FromQuery] string? search = null,
-                                                   [FromQuery] string? sortBy = null,
-                                                   [FromQuery] string? sortOrder = null)
+        public async Task<PagingResponse<T>> GetPaging([FromQuery] int page = 1,
+                                                       [FromQuery] int pageSize = 100,
+                                                       [FromQuery] string? search = null,
+                                                       [FromQuery] string? sortBy = null,
+                                                       [FromQuery] string? sortOrder = null
+        )
         {
-            
-                var response = await _service.QueryPagingAsync(page, pageSize, search, sortBy, sortOrder);
-                return response;
+            var response = await _service.QueryPagingAsync(page, pageSize, search, sortBy, sortOrder);
+            return response;
         }
     }
 }
