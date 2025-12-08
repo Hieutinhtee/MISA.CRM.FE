@@ -21,33 +21,61 @@
       <div class="title-form title-info">Thông tin chung</div>
       <div class="d-flex">
          <div class="form-body">
-            <div>{{ formData }}</div>
 
             <div class="d-flex gap80">
                <div class="flex-item">
                   <ms-input-text label="Mã khách hàng" :column="false" readonly
-                     v-model="formData.customerCode"></ms-input-text>
-                  <ms-input-text label="Tên khách hàng" :column="false" v-model="formData.fullName"
+                     v-model="formData.crmCustomerCode"></ms-input-text>
+                  <ms-input-text label="Tên khách hàng" :column="false" v-model="formData.crmCustomerName"
                      required></ms-input-text>
-                  <ms-input-text label="Email" :column="false" v-model="formData.email"></ms-input-text>
-                  <ms-input-text label="Địa chỉ liên hệ" :column="false" v-model="formData.address"></ms-input-text>
-                  <ms-input-text label="Ngày mua gần nhất" :column="false" v-model="formData.lastPurchaseDate"
-                     :type="'date'">
-                  </ms-input-text>
+
                </div>
                <div class="flex-item">
-                  <ms-input-text label="Loại khách hàng" :column="false" v-model="formData.customerType"
-                     :options="customerTypeOption" :type="'select'"></ms-input-text>
-                  <ms-input-text label="Mã số thuế" :column="false" v-model="formData.taxCode"></ms-input-text>
-                  <ms-input-text label="Số điện thoại" :column="false" v-model="formData.phone"></ms-input-text>
-                  <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
-                     v-model="formData.shippingAddress"></ms-input-text>
-                  <ms-input-text label="Tên hàng hóa đã mua" :column="false"
-                     v-model="formData.lastPurchasedItemName"></ms-input-text>
+                  <ms-input-text label="Loại khách hàng" :column="false" v-model="formData.crmCustomerType"
+                     :options="crmCustomerTypeOption" :type="'select'"></ms-input-text>
+                  <ms-input-text label="Mã số thuế" :column="false"
+                     v-model="formData.crmCustomerTaxCode"></ms-input-text>
+
                </div>
             </div>
 
 
+         </div>
+      </div>
+      <div class="title-form title-info">Thông tin giao hàng</div>
+      <div class="d-flex">
+         <div class="form-body">
+            <div class="d-flex gap80">
+               <div class="flex-item">
+                  <ms-input-text label="Email" :column="false" v-model="formData.crmCustomerEmail"></ms-input-text>
+                  <ms-input-text label="Địa chỉ liên hệ" :column="false"
+                     v-model="formData.crmCustomerAddress"></ms-input-text>
+               </div>
+               <div class="flex-item">
+                  <ms-input-text label="Số điện thoại" :column="false"
+                     v-model="formData.crmCustomerPhoneNumber"></ms-input-text>
+                  <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
+                     v-model="formData.crmCustomerShippingAddress"></ms-input-text>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="title-form title-info">Thông tin hóa đơn</div>
+      <div class="d-flex">
+         <div class="form-body">
+            <div class="d-flex gap80">
+               <div class="flex-item">
+                  <ms-input-text label="Ngày mua gần nhất" :column="false"
+                     v-model="formData.crmCustomerLastPurchaseDate" :type="'date'">
+                  </ms-input-text>
+                  <ms-input-text label="Mã hàng hóa" :column="false"
+                     v-model="formData.crmCustomerPurchasedItemCode"></ms-input-text>
+               </div>
+               <div class="flex-item">
+                  <ms-input-text label="Tên hàng hóa đã mua" :column="false"
+                     v-model="formData.crmCustomerPurchasedItemName"></ms-input-text>
+               </div>
+            </div>
          </div>
       </div>
    </div>
@@ -61,19 +89,20 @@ import MsInputText from '../../components/ms-input/MsInputText.vue';
 import { ref, onMounted } from 'vue';
 
 const formData = ref({
-   customerCode: '',  // Giá trị mặc định, có thể fetch từ API
-   customerType: '',
-   customerName: '',
-   taxCode: '',
-   email: '',
-   phone: '',
-   contactAddress: '',
-   deliveryAddress: '',
-   lastPurchaseDate: '',
-   purchasedItems: ''
+   crmCustomerCode: '',  // Giá trị mặc định, có thể fetch từ API
+   crmCustomerType: '',
+   crmCustomerName: '',
+   crmCustomerTaxCode: '',
+   crmCustomerEmail: '',
+   crmCustomerPhoneNumber: '',
+   crmCustomerAddress: '',
+   crmCustomerShippingAddress: '',
+   crmCustomerLastPurchaseDate: '',
+   crmCustomerPurchasedItemName: '',
+   crmCustomerPurchasedItemCode: ''
 });
 
-const customerTypeOption = ref([
+const crmCustomerTypeOption = ref([
    { value: 'NBH01', label: 'NBH01' },
    { value: 'LKHA', label: 'LKHA' },
    { value: 'VIP', label: 'VIP' }
@@ -87,7 +116,7 @@ function fetchCustomerCode() {
    CustomersAPI.getNextCustomerCode()
       .then(res => {
          if (res.status === 200) {
-            formData.value.customerCode = res.data.customerCode;
+            formData.value.crmCustomerCode = res.data.customerCode;
          } else {
             console.error("API error:", res.status);
          }
@@ -155,6 +184,7 @@ onMounted(() => {
 
 .form-body {
    flex-basis: 1420px;
+   margin-bottom: 24px;
 }
 
 .flex-item {

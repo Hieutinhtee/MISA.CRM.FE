@@ -11,7 +11,7 @@
         <div class="right-bar d-flex align-content-center gap8">
             <div class="search-ai d-flex align-content-center">
                 <div class="icon-search-ai"></div>
-                <input class="input-search-ai" type="text" placeholder="Tìm kiếm thông minh">
+                <input class="input-search-ai" type="text" placeholder="Tìm kiếm thông minh" v-model="payload.search">
                 <div class="icon-ai"></div>
             </div>
             <div class="btn-headquarter-ai">
@@ -21,11 +21,11 @@
             <ms-button iconLeft="import" type="outline-primary">Nhập từ Excel</ms-button>
             <ms-button iconLeft="show-more" type="outline"></ms-button>
             <ms-button iconLeft="list" iconRight="down" type="outline"></ms-button>
-
         </div>
     </div>
     <div class="content d-flex flex1 flex-row">
-        <ms-table :columns="cols" :rows="data"></ms-table>
+        <ms-table :columns="cols" :rows="data" :pagination-data="payload"
+            @update:pagination="onPaginationUpdate"></ms-table>
     </div>
 
 </template>
@@ -34,41 +34,13 @@
 import MsTextColor from '@/components/ms-button/MsTextColor.vue';
 import MsButton from '@/components/ms-button/MsButton.vue';
 import MsTable from '@/components/ms-table/MsTable.vue';
-import { useRouter } from 'vue-router'
-import { reactive, ref } from 'vue'
-
-// API
+import { useRouter } from 'vue-router';
+import { reactive, ref, watch, onMounted } from 'vue';
 import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
 
-CustomersAPI.getAll().then(res => {
-    data.value = res.data.data;
-});
+const data = ref([]);
 
-const payload = {
-    page: 1,
-    pageSize: 2,
-    search: "",
-    sortBy: "",
-    sortOrder: ""
-};
-
-
-CustomersAPI.paging(payload).then(result => {
-    console.log(result.data); // dữ liệu
-    console.log(result); // meta { page, pageSize, total }
-});
-
-
-
-
-// Route
-const router = useRouter()
-
-function goToAdd() {
-    router.push('/customer/add')
-}
-
-// Columns
+// Columns-----------------------------------------------------------
 const cols = [
     { field: "crmCustomerType", header: "Loại khách hàng", width: 175 },
     { field: "crmCustomerCode", header: "Mã khách hàng", width: 280 },
@@ -81,8 +53,82 @@ const cols = [
     { field: "crmCustomerPurchasedItemName", header: "Tên hàng hóa đã mua", width: 300 }
 ];
 
+// ref payload lưu thông tin phân trang
+const payload = reactive({
+    page: 1,
+    pageSize: 100,
+    search: "",
+    sortBy: "",
+    sortOrder: "",
+    totalRows: 1000
+});
+
+// -----------------------------------
+// Debounce search
+// -----------------------------------
+let debounceTimer = null;
+
+watch(
+    () => payload.search,
+    (newVal) => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            payload.page = 1;
+            loadDataForAPI();
+        }, 350);
+    }
+);
+
+// Watch các trường khác (page, pageSize, sortBy, sortOrder)
+watch(
+    () => [payload.page, payload.pageSize, payload.sortBy, payload.sortOrder],
+    () => {
+        loadDataForAPI();
+    }
+);
+
+// -----------------------------------
+// Hàm gọi API
+// -----------------------------------
+function loadDataForAPI() {
+    // Chỉ lấy 5 tham số đầu để gửi API
+    const { page, pageSize, search, sortBy, sortOrder } = payload;
+
+    CustomersAPI.paging({ page, pageSize, search, sortBy, sortOrder })
+        .then(result => {
+            data.value = result.data.data;
+            payload.totalRows = result.data.meta.total // dữ liệu table
+            console.log(result.data);      // dữ liệu + meta
+        });
+}
+
+// -----------------------------------
+// Con emit -> cha nhận (ví dụ nếu Footer component emit)
+// -----------------------------------
+function onPaginationUpdate(newPayload) {
+    Object.assign(payload, newPayload);
+    loadDataForAPI();
+}
+
+// -----------------------------------
+// Mounted: load data 1 lần khi component khởi tạo
+// -----------------------------------
+onMounted(() => {
+    loadDataForAPI();
+});
+
+
+// Route--------------------------------------------------------------
+const router = useRouter()
+
+function goToAdd() {
+    router.push('/customer/add')
+}
+
+
+
 // Sample Data
-const data = ref([]);
+
 
 </script>
 

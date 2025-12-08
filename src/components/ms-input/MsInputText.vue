@@ -99,7 +99,7 @@ defineExpose({
 label {
    width: 174px;
    font-weight: 500;
-   color: #1f2229e7;
+   color: #1f2229b6;
 }
 
 

@@ -36,15 +36,17 @@
             <div class="icon-sort-setting"></div>
             <div class="total-row">
                <div class="total-row-title">Tổng số:</div>
-               <strong class="total-row-value">22</strong>
+               <strong class="total-row-value">{{ localData.totalRows }}</strong>
             </div>
             <div class="total-debt">
                <div class="total-debt-title">Công nợ</div>
-               <strong class="total-debt-value">22.000.00</strong>
+               <strong class="total-debt-value">0</strong>
             </div>
          </div>
+
          <div class="footer-end d-flex align-content-center">
-            <a-select v-model:value="pageSize" style="width: 180px" lineHeight="32px">
+            <a-select style="width: 180px" v-model:value="localData.pageSize" @change="onChangePageSize"
+               lineHeight="32px">
                <template #suffixIcon>
                   <div class="icon-down"></div>
                </template>
@@ -53,15 +55,15 @@
                <a-select-option :value="50">50 Bản ghi trên trang</a-select-option>
                <a-select-option :value="100">100 Bản ghi trên trang</a-select-option>
             </a-select>
-            <div class="pagination d-flex">
-               <div class="icon-pagination-first"></div>
-               <div class="icon-left"></div>
-               <div><strong>4</strong></div>
-               <div>đến</div>
-               <div><strong>26</strong></div>
 
-               <div class="icon-right"></div>
-               <div class="icon-pagination-end"></div>
+            <div class="pagination d-flex">
+               <div class="icon-pagination-first" @click="changePage('first')"></div>
+               <div class="icon-left" @click="changePage('prev')"></div>
+               <div><strong>{{ localData.recordStart }}</strong></div>
+               <div>đến</div>
+               <div><strong>{{ localData.recordEnd }}</strong></div>
+               <div class="icon-right" @click="changePage('next')"></div>
+               <div class="icon-pagination-end" @click="changePage('last')"></div>
             </div>
          </div>
       </div>
@@ -70,7 +72,7 @@
 </template>
 
 <script setup>
-import { defineProps, ref, watch } from "vue";
+import { defineProps, ref, watch, reactive } from "vue";
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
 import 'primeicons/primeicons.css';
@@ -83,6 +85,7 @@ import { formatNumber, formatDate, formatText } from '@/utils/formatter.js';
 
 const pageSize = ref(100);
 
+//Khai báo props
 const props = defineProps({
    /** danh sách cột */
    columns: {
@@ -104,13 +107,76 @@ const props = defineProps({
       required: true
    },
 
-
+   //prop cho paging, sort
+   paginationData: {
+      type: Object,
+      required: true
+   }
 });
 
+
+//----------------------------Xử lý pagination --------------------------------------------------------------------------------------
+const emit = defineEmits(["update:pagination"]);
+
+// tạo copy local để con tự quản lý
+const localData = reactive({
+   ...props.paginationData,
+   recordStart: 1, // số thứ tự bản ghi đầu trang
+   recordEnd: 1    // số thứ tự bản ghi cuối trang
+});
+
+// watch khi cha update object → cập nhật localData
+watch(
+   () => props.paginationData,
+   (newVal) => {
+      Object.assign(localData, newVal);
+      computeRecordRange(localData.page);
+   },
+   { deep: true }
+);
+
+// Hàm tính lại recordStart/recordEnd dựa trên pageSize và page (số trang)
+function computeRecordRange(pageNumber) {
+   localData.recordStart = (pageNumber - 1) * localData.pageSize + 1;
+   localData.recordEnd = Math.min(localData.recordStart + localData.pageSize - 1, localData.totalRows);
+}
+
+// khi đổi pageSize → reset về trang 1
+function onChangePageSize(value) {
+   localData.pageSize = value;
+   localData.page = 1;                   // reset về trang 1
+   computeRecordRange(localData.page);
+   emit("update:pagination", { ...localData });
+}
+
+// khi nhấn các icon
+function changePage(action) {
+   const totalPages = Math.ceil(localData.totalRows / localData.pageSize);
+   let currentPage = localData.page;
+
+   switch (action) {
+      case "first": currentPage = 1; break;
+      case "prev": currentPage = Math.max(currentPage - 1, 1); break;
+      case "next": currentPage = Math.min(currentPage + 1, totalPages); break;
+      case "last": currentPage = totalPages; break;
+   }
+
+   localData.page = currentPage;
+   computeRecordRange(currentPage);
+   emit("update:pagination", { ...localData });
+}
+
+// khởi tạo range khi load
+computeRecordRange(localData.page || 1);
+
+
+// ---------------Xử lý checkbox-------------------------------------------------------------------------------------------------------------------------------
 const selectedProducts = ref();
 
 watch(selectedProducts, () => console.log(selectedProducts));
 
+
+//---------------Format dữ liệu như số, date, string -------------------------------------------------------------------------------------------------------------
 const handleFormat = (value, type) => {
    switch (type) {
       case 'number':
