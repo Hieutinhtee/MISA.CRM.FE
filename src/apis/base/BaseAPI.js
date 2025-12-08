@@ -11,6 +11,15 @@ export default class BaseAPI {
     getAll() {
         return api.get(`${this.controller}`);
     }
+
+    /**
+     * Phương thức lấy dữ liệu theo guid
+     * createdby: TMHieu - 6.12.2025
+     */
+    getById(id) {
+        return api.get(`${this.controller}/${id}`);
+    }
+
     /**
      * Hàm lấy dữ liệu phân trang
      * @param {*} payload 
@@ -26,14 +35,25 @@ export default class BaseAPI {
      * createdby: TMHieu - 6.12.2025
      */
     update(id, body) {
-        return api.put(`${this.controller}/update/${id}`, body);
+        return api.put(`${this.controller}/${id}`, body);
     }
+
     /**
-     * Hàm xóa bản ghi
-     * @param {*} id 
+     * Hàm thêm mới bản ghi dữ liệu
+     * @param {*} body 
      * createdby: TMHieu - 6.12.2025
      */
-    delete(id) {
-        return api.delete(`${this.controller}/delete/${id}`);
+    create(body) {
+        return api.post(`${this.controller}/`, body);
     }
+
+    /**
+     * Hàm xóa 1 hoặc nhiều bản ghi dữ liệu
+     * @param {*} body 
+     * createdby: TMHieu - 7.12.2025
+     */
+    delete(body) {
+        return api.post(`${this.controller}/bulk-update`, body);
+    }
+
 }

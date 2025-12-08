@@ -16,7 +16,6 @@ export const formatNumber = (value) => {
  * createdby: TMHieu - 6.12.2025
  */
 export const formatDate = (value) => {
-  console.log('date');
   if (!value) return '';
   const date = new Date(value);
   return new Intl.DateTimeFormat().format(date);

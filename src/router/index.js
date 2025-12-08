@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import CustomerList from '../views/customer/CustomerList.vue';
 import CustomerAdd from '../views/customer/CustomerAdd.vue';
+import CustomerEdit from '../views/customer/CustomerEdit.vue';
 
 const routes = [
   {
@@ -14,6 +15,10 @@ const routes = [
   {
     path: '/customer/add',
     component: CustomerAdd
+  },
+  {
+    path: '/customer/edit/:id',
+    component: CustomerEdit
   },
 ];
 

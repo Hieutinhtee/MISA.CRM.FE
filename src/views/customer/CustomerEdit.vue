@@ -2,7 +2,7 @@
    <!-- Tool bar -->
    <div class="toolbar d-flex justify-content-between flex-col">
       <div class="left-bar d-flex align-content-center">
-         <div class="title-header">Thêm Khách hàng</div>
+         <div class="title-header">Sửa Khách hàng</div>
          <div class="d-flex align-content-center m-r-8">
             <div class="dropdown-select-layout">Mẫu tiêu chuẩn</div>
             <div class="icon-down"></div>
@@ -10,9 +10,9 @@
          <ms-text-color type="primary">Sửa bố cục</ms-text-color>
       </div>
       <div class="right-bar d-flex align-content-center">
-         <ms-button class="btn-cancel" type="outline">Hủy bỏ</ms-button>
+         <ms-button class="btn-cancel" type="outline" @click="backToList">Hủy bỏ</ms-button>
          <ms-button type="outline-primary">Lưu và thêm</ms-button>
-         <ms-button type="primary" @click="createCustomer">Lưu</ms-button>
+         <ms-button type="primary" @click="editCustomer">Lưu</ms-button>
       </div>
    </div>
    <div class="content flex1">
@@ -25,16 +25,16 @@
             <div class="d-flex gap80">
                <div class="flex-item">
                   <ms-input-text label="Mã khách hàng" :column="false" readonly
-                     v-model="formData.crmCustomerCode"></ms-input-text>
-                  <ms-input-text label="Tên khách hàng" :column="false" v-model="formData.crmCustomerName"
+                     v-model="formDataEdit.crmCustomerCode"></ms-input-text>
+                  <ms-input-text label="Tên khách hàng" :column="false" v-model="formDataEdit.crmCustomerName"
                      required></ms-input-text>
-                  <ms-input-text label="Email" :column="false" v-model="formData.crmCustomerEmail"></ms-input-text>
+
                </div>
                <div class="flex-item">
-                  <ms-input-text label="Loại khách hàng" :column="false" v-model="formData.crmCustomerType"
+                  <ms-input-text label="Loại khách hàng" :column="false" v-model="formDataEdit.crmCustomerType"
                      :options="crmCustomerTypeOption" :type="'select'"></ms-input-text>
                   <ms-input-text label="Mã số thuế" :column="false"
-                     v-model="formData.crmCustomerTaxCode"></ms-input-text>
+                     v-model="formDataEdit.crmCustomerTaxCode"></ms-input-text>
 
                </div>
             </div>
@@ -47,18 +47,15 @@
          <div class="form-body">
             <div class="d-flex gap80">
                <div class="flex-item">
-                  <ms-input-text label="Số điện thoại" :column="false" v-model="formData.crmCustomerPhoneNumber" :rules="[
-                     v => !!v || 'Không được để trống số điện thoại',
-                     v => /^[0-9]+$/.test(v) || 'Số điện thoại chỉ được chứa chữ số',
-                     v => (v.length >= 10 && v.length <= 11) || 'Số điện thoại phải có 10 - 11 số'
-                  ]"></ms-input-text>
+                  <ms-input-text label="Email" :column="false" v-model="formDataEdit.crmCustomerEmail"></ms-input-text>
                   <ms-input-text label="Địa chỉ liên hệ" :column="false"
-                     v-model="formData.crmCustomerAddress"></ms-input-text>
+                     v-model="formDataEdit.crmCustomerAddress"></ms-input-text>
                </div>
                <div class="flex-item">
-
+                  <ms-input-text label="Số điện thoại" :column="false"
+                     v-model="formDataEdit.crmCustomerPhoneNumber"></ms-input-text>
                   <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
-                     v-model="formData.crmCustomerShippingAddress"></ms-input-text>
+                     v-model="formDataEdit.crmCustomerShippingAddress"></ms-input-text>
                </div>
             </div>
          </div>
@@ -69,14 +66,14 @@
             <div class="d-flex gap80">
                <div class="flex-item">
                   <ms-input-text label="Ngày mua gần nhất" :column="false"
-                     v-model="formData.crmCustomerLastPurchaseDate" :type="'date'">
+                     v-model="formDataEdit.crmCustomerLastPurchaseDate" :type="'date'">
                   </ms-input-text>
                   <ms-input-text label="Mã hàng hóa" :column="false"
-                     v-model="formData.crmCustomerPurchasedItemCode"></ms-input-text>
+                     v-model="formDataEdit.crmCustomerPurchasedItemCode"></ms-input-text>
                </div>
                <div class="flex-item">
                   <ms-input-text label="Tên hàng hóa đã mua" :column="false"
-                     v-model="formData.crmCustomerPurchasedItemName"></ms-input-text>
+                     v-model="formDataEdit.crmCustomerPurchasedItemName"></ms-input-text>
                </div>
             </div>
          </div>
@@ -89,9 +86,16 @@
 import MsTextColor from '@/components/ms-button/MsTextColor.vue';
 import MsButton from '@/components/ms-button/MsButton.vue';
 import MsInputText from '../../components/ms-input/MsInputText.vue';
+import dayjs from 'dayjs'
+import { useRoute } from 'vue-router';
 import { ref, onMounted } from 'vue';
 
-const formData = ref({
+var date = dayjs('2025-12-06T00:00:00');
+
+const route = useRoute()
+const id = route.params.id
+
+const formDataEdit = ref({
    crmCustomerCode: '',  // Giá trị mặc định, có thể fetch từ API
    crmCustomerType: '',
    crmCustomerName: '',
@@ -116,25 +120,12 @@ const crmCustomerTypeOption = ref([
 import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
 
 
-function fetchCustomerCode() {
-   CustomersAPI.getNextCustomerCode()
-      .then(res => {
-         if (res.status === 200) {
-            formData.value.crmCustomerCode = res.data.customerCode;
-         } else {
-            console.error("API error:", res.status);
-         }
-      })
-      .catch(err => {
-         console.error("Fetch error:", err);
-      });
-}
 
-function createCustomer() {
-   const payload = { ...formData.value, crmCustomerLastPurchaseDate: convertToISO(formData.value.crmCustomerLastPurchaseDate) };
-   CustomersAPI.create(payload).then(res => {
+function editCustomer() {
+   const payload = { ...formDataEdit.value, crmCustomerLastPurchaseDate: convertToISO(formDataEdit.value.crmCustomerLastPurchaseDate), crmCustomerImage: 'img' };
+   CustomersAPI.update(id, payload).then(res => {
       // Chỉ chạy khi status 201
-      alert("Tạo thành công!");
+      alert("Sửa thành công!");
 
    })
       .catch(err => {
@@ -154,25 +145,32 @@ function createCustomer() {
 
 }
 
-function convertToISO(dateStr) {
-   const [day, month, year] = dateStr.split("/").map(Number);
-   const now = new Date();
-
-   const date = new Date(Date.UTC(
-      year, month - 1, day,
-      now.getHours(),
-      now.getMinutes(),
-      now.getSeconds(),
-      now.getMilliseconds()
-   ));
-
-   return date.toISOString();
+function convertToISO(dateObj) {
+   if (!dateObj) return null;
+   return dayjs(dateObj).toISOString();
 }
 
 
-onMounted(() => {
-   fetchCustomerCode(); // Gọi khi component mount
-});
+function backToList() {
+   router.push('/customer/list');
+}
+
+onMounted(async () => {
+   const res = await CustomersAPI.getById(id)
+   console.log(res);
+   // Kiểm tra có ngày không để khỏi lỗi nhé (._.)
+   const dateConverted = res.data.data.crmCustomerLastPurchaseDate
+      ? dayjs(res.data.data.crmCustomerLastPurchaseDate)
+      : '';
+
+   // Map thẳng data từ API vào form
+   formDataEdit.value = {
+      ...formDataEdit.value,
+      ...res.data.data,
+      crmCustomerLastPurchaseDate: dateConverted,
+      crmCustomerImage: 'img'
+   }
+})
 </script>
 
 <style scoped>

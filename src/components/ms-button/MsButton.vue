@@ -48,7 +48,15 @@ const props = defineProps({
 
 .ms-button--primary:hover {
     background-color: #2b4eee;
+}
 
+.ms-button--danger {
+    background-color: #f9373a;
+    color: #fff;
+}
+
+.ms-button--danger:hover {
+    background-color: #fe5356;
 }
 
 .ms-button--outline {
@@ -71,6 +79,5 @@ const props = defineProps({
 
 .ms-button--outline-primary:hover {
     background-color: #e7ebfd;
-
 }
 </style>

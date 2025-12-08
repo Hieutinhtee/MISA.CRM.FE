@@ -1,7 +1,8 @@
 <template>
    <div class="table-content d-flex flex1 flex-column">
-      <DataTable :value="rows" scrollable scrollHeight="100%" resizableColumns columnResizeMode="expand"
-         class="prime-table flex1" dataKey="customerId" selectionMode="checkbox" v-model:selection="selectedProducts">
+      <DataTable :value="rows" scrollable scrollHeight="100%" resizableColumns columnResizeMode="expand" lazy
+         removableSort @row-click="handleRowClick" sortMode="single" class="prime-table flex1" dataKey="crmCustomerId"
+         selectionMode="checkbox" v-model:selection="selectedProducts" :customSort="true" @sort="onSort">
          <Column selectionMode="multiple" :frozen="true"></Column>
          <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" :sortable="true"
             :style="col.width ? {
@@ -84,6 +85,8 @@ import MsTextColor from '@/components/ms-button/MsTextColor.vue';
 import { formatNumber, formatDate, formatText } from '@/utils/formatter.js';
 
 const pageSize = ref(100);
+const emit = defineEmits(["update:pagination", "row-click", "update:selectedProducts"]);
+
 
 //Khai báo props
 const props = defineProps({
@@ -116,7 +119,7 @@ const props = defineProps({
 
 
 //----------------------------Xử lý pagination --------------------------------------------------------------------------------------
-const emit = defineEmits(["update:pagination"]);
+
 
 // tạo copy local để con tự quản lý
 const localData = reactive({
@@ -171,10 +174,29 @@ computeRecordRange(localData.page || 1);
 
 
 // ---------------Xử lý checkbox-------------------------------------------------------------------------------------------------------------------------------
-const selectedProducts = ref();
+const selectedProducts = ref([]);
 
-watch(selectedProducts, () => console.log(selectedProducts));
+watch(selectedProducts, (newVal) => {
+   emit("update:selectedProducts", newVal);
+});
 
+//---------------------Xử lý sort cột-----------------------------------------------------------------
+
+function onSort(e) {
+   console.log("Vừa sort");
+}
+//---------------------Row Click để edit-------------------------------------------------------
+
+function handleRowClick(event) {
+   emit('row-click', event.data)  // event.data là row được click
+}
+
+
+//---------------Emit các bản ghi được checkbox lên cha------------------------------------------
+const onSelectionChange = (e) => {
+   selectedProducts.value = e.value;
+   emit("update:selectedProducts", selectedProducts.value);
+};
 
 //---------------Format dữ liệu như số, date, string -------------------------------------------------------------------------------------------------------------
 const handleFormat = (value, type) => {
@@ -279,6 +301,14 @@ const handleFormat = (value, type) => {
    opacity: 1;
 }
 
+/* Chặn PrimeVue sort data */
+.p-datatable .p-sortable-column {
+   pointer-events: auto !important;
+}
+
+.p-datatable .p-sortable-column-icon {
+   pointer-events: none !important;
+}
 
 .pagination {
    margin-left: 20px;

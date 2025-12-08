@@ -1,23 +1,26 @@
 <template>
-   <div class="ms-input-wrapper w-100" :class="props.column ? 'flex-column' : 'justify-content-between'">
-      <label v-if="props.label" :for="props.label" :class="{ required: props.required }">{{ props.label }}</label>
+   <div class="wrapper-input">
+      <div class="ms-input-wrapper w-100" :class="props.column ? 'flex-column' : 'justify-content-between'">
+         <label v-if="props.label" :for="props.label" :class="{ required: props.required }">{{ props.label }}</label>
 
-      <!-- SELECT -->
-      <a-select v-if="props.type === 'select'" show-search :options="props.options" :filter-option="filterOption"
-         :placeholder="placeholder || label" :value="model" @change="handleSelectChange" />
+         <!-- SELECT -->
+         <a-select v-if="props.type === 'select'" show-search :options="props.options" :filter-option="filterOption"
+            :placeholder="placeholder || label" :value="model" @change="handleSelectChange" />
 
-      <!-- DATE PICKER -->
-      <a-space v-else-if="props.type === 'date'">
-         <a-date-picker :value="model ? dayjs(model, dateFormatList[0]) : null" @change="handleDateChange"
-            class="d-block" :format="dateFormatList" :placeholder="placeholder || label" />
-      </a-space>
+         <!-- DATE PICKER -->
+         <a-space v-else-if="props.type === 'date'">
+            <a-date-picker :value="model ? dayjs(model, dateFormatList[0]) : null" @change="handleDateChange"
+               class="d-block" :format="dateFormatList" :placeholder="placeholder || label" />
+         </a-space>
 
-      <!-- INPUT TEXT -->
-      <input v-else :id="props.label" type="text" :placeholder="props.placeholder || ''" v-model="model"
-         :class="{ 'input-error': !!errorMessage }" @blur="validate" :readonly="props.readonly" />
+         <!-- INPUT TEXT -->
+         <input v-else :id="props.label" type="text" :placeholder="props.placeholder || ''" v-model="model"
+            :class="{ 'input-error': !!errorMessage }" @blur="validate" :readonly="props.readonly" />
 
 
-      <!-- Hiển thị lỗi đỏ bên dưới -->
+         <!-- Hiển thị lỗi đỏ bên dưới -->
+
+      </div>
       <div v-if="errorMessage" class="error-text">
          {{ errorMessage }}
       </div>
@@ -54,13 +57,11 @@ const errorMessage = ref('')
 //  Xử lý thay đổi Select
 function handleSelectChange(value) {
    model.value = value
-   validate()
 }
 
 //  Xử lý thay đổi DatePicker
 function handleDateChange(date, dateString) {
    model.value = dateString // Lưu dạng string "DD/MM/YYYY"
-   validate()
 }
 
 // Hàm validate
@@ -102,10 +103,13 @@ label {
    color: #1f2229b6;
 }
 
+.wrapper-input {
+   margin-bottom: 16px;
+}
 
 .ms-input-wrapper {
    display: flex;
-   margin-bottom: 16px;
+   margin-bottom: 6px;
    position: relative;
    align-items: center;
 }
@@ -149,8 +153,9 @@ input:focus {
    color: #ff4d4f;
    font-size: 12px;
    margin-top: 4px;
-   position: absolute;
+   /* position: absolute;
    bottom: -16px;
+   right: 0; */
 }
 
 :deep(.ant-select) {

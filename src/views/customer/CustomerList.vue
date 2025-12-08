@@ -5,8 +5,16 @@
             <ms-button class="show-menu" iconLeft="folder" iconRight="down" type="outline">Tất cả khách hàng</ms-button>
             <ms-text-color type="primary">Sửa</ms-text-color>
             <div class="btn-grey">
-                <div class="icon-reload"></div>
+                <div class="icon-reload" @click="reloadData"></div>
             </div>
+            <ms-button v-if="selectedFromChild.length > 0" class="m-l-12" type="danger" @click="deleteSelected">
+                Xóa
+            </ms-button>
+
+            <ms-button v-if="selectedFromChild.length > 0" class="m-l-12" type="outline-primary"
+                @click="exportSelected">
+                Xuất Excel các bản ghi
+            </ms-button>
         </div>
         <div class="right-bar d-flex align-content-center gap8">
             <div class="search-ai d-flex align-content-center">
@@ -24,8 +32,8 @@
         </div>
     </div>
     <div class="content d-flex flex1 flex-row">
-        <ms-table :columns="cols" :rows="data" :pagination-data="payload"
-            @update:pagination="onPaginationUpdate"></ms-table>
+        <ms-table :columns="cols" :rows="data" :pagination-data="payload" @row-click="onRowClick"
+            v-model:selectedProducts="selectedFromChild" @update:pagination="onPaginationUpdate"></ms-table>
     </div>
 
 </template>
@@ -35,10 +43,16 @@ import MsTextColor from '@/components/ms-button/MsTextColor.vue';
 import MsButton from '@/components/ms-button/MsButton.vue';
 import MsTable from '@/components/ms-table/MsTable.vue';
 import { useRouter } from 'vue-router';
-import { reactive, ref, watch, onMounted } from 'vue';
+import { reactive, ref, watch, onMounted, computed } from 'vue';
 import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import { formatNumber, formatDate, formatText } from '@/utils/formatter.js';
 
 const data = ref([]);
+const selectedFromChild = ref([]);
+
+
 
 // Columns-----------------------------------------------------------
 const cols = [
@@ -87,6 +101,14 @@ watch(
     }
 );
 
+function reloadData() {
+    payload.page = 1;
+    payload.pageSize = 100;
+    payload.search = "";
+    payload.sortBy = "";
+    payload.sortOrder = "";
+}
+
 // -----------------------------------
 // Hàm gọi API
 // -----------------------------------
@@ -98,7 +120,6 @@ function loadDataForAPI() {
         .then(result => {
             data.value = result.data.data;
             payload.totalRows = result.data.meta.total // dữ liệu table
-            console.log(result.data);      // dữ liệu + meta
         });
 }
 
@@ -125,11 +146,89 @@ function goToAdd() {
     router.push('/customer/add')
 }
 
+//-------------Xử lý edit------------------
+function onRowClick(row) {
+    router.push(`/customer/edit/${row.crmCustomerId}`);
+}
+
+//---------------Xóa----------------------
+
+const ids = ref([]);
+
+// watch mỗi khi selectedFromChild thay đổi
+watch(selectedFromChild, (newVal) => {
+    ids.value = newVal.map(item => item.crmCustomerId);
+    console.log("ids cập nhật:", ids.value);
+}, { deep: true });
+
+console.log(ids.value);
+
+// Gọi API
 
 
-// Sample Data
+function deleteSelected() {
+    const payloadDelete = {
+        ids: ids.value, // ["3fa85f64-5717-4562-b3fc-2c963f66afa6", "44b71a89-795b-29c6-b892-08c864661f9c"]
+        columnName: "crm_customer_is_deleted",
+        value: 1 // hoặc "1" tùy kiểu cột
+    };
+    CustomersAPI.delete(payloadDelete)
+        .then(res => {
+            if (res.status === 200) { // API update trả về 200 OK
+                alert("Xóa thành công", res.data.updatedCount, " bản ghi!");
+                reloadData();
+                loadDataForAPI();
+                selectedFromChild.value = [];
+            } else {
+                alert(`Có lỗi, status: ${res.status}`);
+            }
+        })
+        .catch(err => {
+            console.log("API Error:", err);
 
+            const errors = err?.response?.data?.errors;
 
+            if (errors) {
+                // Lấy tất cả lỗi validation nếu có
+                const allErrors = Object.values(errors).flat();
+                alert(allErrors.join("\n"));
+                return;
+            }
+
+            alert("Có lỗi xảy ra");
+        });
+}
+
+function exportSelected(data) {
+    console.log("Xuất Excel:", selectedFromChild.value);
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('DanhSachKhachHang');
+
+    // Tạo header
+    sheet.columns = cols.map(c => ({ header: c.header, key: c.field, width: c.width * 0.1 }));
+
+    // In đậm header
+    sheet.getRow(1).font = { bold: true };
+
+    // Thêm dữ liệu
+    selectedFromChild.value.forEach(item => {
+        const rowData = {};
+        cols.forEach(c => {
+            if (c.field === 'crmCustomerLastPurchaseDate') {
+                rowData[c.field] = formatDate(item[c.field]);
+            } else {
+                rowData[c.field] = item[c.field];
+            }
+        });
+        sheet.addRow(rowData);
+    });
+    const fileName = "DanhSachKhachHang" + Date.now() + ".xlsx";
+    // Xuất file
+    workbook.xlsx.writeBuffer().then(buffer => {
+        saveAs(new Blob([buffer], { type: 'application/octet-stream' }), fileName);
+    });
+}
 </script>
 
 <style scoped>
