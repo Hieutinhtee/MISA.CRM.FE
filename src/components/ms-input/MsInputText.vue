@@ -5,12 +5,12 @@
 
          <!-- SELECT -->
          <a-select v-if="props.type === 'select'" show-search :options="props.options" :filter-option="filterOption"
-            :placeholder="placeholder || label" :value="model" @change="handleSelectChange" />
+            @blur="validate" :placeholder="placeholder || label" :value="model" @change="handleSelectChange" />
 
          <!-- DATE PICKER -->
          <a-space v-else-if="props.type === 'date'">
             <a-date-picker :value="model ? dayjs(model, dateFormatList[0]) : null" @change="handleDateChange"
-               class="d-block" :format="dateFormatList" :placeholder="placeholder || label" />
+               @blur="validate" class="d-block" :format="dateFormatList" :placeholder="placeholder || label" />
          </a-space>
 
          <!-- INPUT TEXT -->
@@ -21,18 +21,17 @@
          <!-- Hiển thị lỗi đỏ bên dưới -->
 
       </div>
-      <div v-if="errorMessage" class="error-text">
-         {{ errorMessage }}
+      <div v-if="errorMessage" class="error-text d-flex">
+         <div>{{ errorMessage }}</div>
       </div>
    </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, defineExpose } from 'vue'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
-
-dayjs.extend(customParseFormat)
+dayjs.extend(customParseFormat);
 
 const props = defineProps({
    label: String,
@@ -42,17 +41,21 @@ const props = defineProps({
    column: { type: Boolean, default: true },
    type: String,
    options: Array,
-   rules: { type: Array, default: () => [] }
-})
+   rules: { type: Array, default: () => [] },
+   externalError: { type: String, default: "" },
+   field: String
+});
 
 const filterOption = (input, option) => {
    return option.label.toLowerCase().includes(input.toLowerCase())
 }
 
-const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY']
+const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY'];
 
-const model = defineModel({ required: true })
-const errorMessage = ref('')
+const model = defineModel({ required: true });
+const emit = defineEmits(["blur-check"]);
+
+const errorMessage = ref('');
 
 //  Xử lý thay đổi Select
 function handleSelectChange(value) {
@@ -64,36 +67,36 @@ function handleDateChange(date, dateString) {
    model.value = dateString // Lưu dạng string "DD/MM/YYYY"
 }
 
-// Hàm validate
-function validate() {
-   if (!props.rules || props.rules.length === 0) {
-      errorMessage.value = ''
-      return true
-   }
-   for (const rule of props.rules) {
-      if (typeof rule === 'function') {
-         const result = rule(model.value)
-         if (result !== true) {
-            errorMessage.value = result || 'Lỗi không xác định'
-            return false
-         }
-      }
-   }
-   errorMessage.value = ''
-   return true
+// Hàm emit lên để cha validate
+async function validate() {
+   emit("blur-check", {
+      label: props.label,
+      field: props.field,
+      value: model.value
+   });
 }
 
-// Tự động xóa lỗi khi người dùng gõ lại
+watch(() => props.externalError, (val) => {
+   errorMessage.value = val;
+});
+
+
 watch(model, () => {
    if (errorMessage.value) {
-      validate()
+      errorMessage.value = ""; // xóa lỗi
    }
 })
 
+
 defineExpose({
-   validate,
-   hasError: computed(() => !!errorMessage.value)
-})
+   setError(msg) {
+      errorMessage.value = msg;
+   },
+   clearError() {
+      errorMessage.value = "";
+   }
+});
+
 </script>
 
 <style scoped>
@@ -153,6 +156,7 @@ input:focus {
    color: #ff4d4f;
    font-size: 12px;
    margin-top: 4px;
+   justify-content: flex-end;
    /* position: absolute;
    bottom: -16px;
    right: 0; */

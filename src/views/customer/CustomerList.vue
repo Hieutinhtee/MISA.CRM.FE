@@ -2,12 +2,31 @@
     <!-- Tool bar -->
     <div class="toolbar d-flex justify-content-between flex-col">
         <div class="left-bar d-flex align-content-center">
-            <ms-button class="show-menu" iconLeft="folder" iconRight="down" type="outline">Tất cả khách hàng</ms-button>
+            <a-select lineHeight="32px" style="width: 200px;" class="my-select"
+                v-model:value="payload.selectedTypeCustomer">
+                <template #suffixIcon>
+                    <div class="icon-folder icon-left-select"></div>
+                    <div class="icon-down "></div>
+                </template>
+
+                <a-select-option :value="null"><span
+                        class="select-type-customer-font">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tất
+                        cả khách
+                        hàng</span></a-select-option>
+                <a-select-option :value="'VIP'"><span
+                        class="select-type-customer-font">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VIP</span></a-select-option>
+                <a-select-option :value="'NBH01'"><span
+                        class="select-type-customer-font">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NBH01</span></a-select-option>
+                <a-select-option :value="'LKHA'"><span
+                        class="select-type-customer-font">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LKHA</span></a-select-option>
+
+            </a-select>
+            <div>{{ }}</div>
             <ms-text-color type="primary">Sửa</ms-text-color>
             <div class="btn-grey">
                 <div class="icon-reload" @click="reloadData"></div>
             </div>
-            <ms-button v-if="selectedFromChild.length > 0" class="m-l-12" type="danger" @click="deleteSelected">
+            <ms-button v-if="selectedFromChild.length > 0" class="m-l-12" type="danger" @click="showModalDelete">
                 Xóa
             </ms-button>
 
@@ -15,6 +34,7 @@
                 @click="exportSelected">
                 Xuất Excel các bản ghi
             </ms-button>
+
         </div>
         <div class="right-bar d-flex align-content-center gap8">
             <div class="search-ai d-flex align-content-center">
@@ -33,9 +53,13 @@
     </div>
     <div class="content d-flex flex1 flex-row">
         <ms-table :columns="cols" :rows="data" :pagination-data="payload" @row-click="onRowClick"
-            v-model:selectedProducts="selectedFromChild" @update:pagination="onPaginationUpdate"></ms-table>
+            :loading="isLoadingTable" v-model:selectedProducts="selectedFromChild"
+            @update:pagination="onPaginationUpdate"></ms-table>
     </div>
-
+    <a-modal v-model:open="isModalOpen" title="Xác nhận xóa" @ok="handleOk" @cancel="handleCancel" ok-text="Đồng ý"
+        cancel-text="Hủy">
+        <p>Bạn có chắc chắn xóa {{ ids.length }} bản ghi?</p>
+    </a-modal>
 </template>
 
 <script setup>
@@ -48,9 +72,15 @@ import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { formatNumber, formatDate, formatText } from '@/utils/formatter.js';
+import { Modal, Button } from "ant-design-vue";
+import { useToastMessage } from '@/composables/useToastMessage';
 
+const { showToastSuccess, showToastError, showToastInfo } = useToastMessage();
+
+const isLoadingTable = ref(true);
 const data = ref([]);
 const selectedFromChild = ref([]);
+
 
 
 
@@ -65,6 +95,7 @@ const cols = [
     { field: "crmCustomerLastPurchaseDate", header: "Ngày mua hàng gần nhất", width: 240, type: "date" },
     { field: "crmCustomerPurchasedItemCode", header: "Hàng hóa đã mua", width: 200 },
     { field: "crmCustomerPurchasedItemName", header: "Tên hàng hóa đã mua", width: 300 }
+
 ];
 
 // ref payload lưu thông tin phân trang
@@ -74,7 +105,8 @@ const payload = reactive({
     search: "",
     sortBy: "",
     sortOrder: "",
-    totalRows: 1000
+    totalRows: 1000,
+    selectedTypeCustomer: null
 });
 
 // -----------------------------------
@@ -93,13 +125,16 @@ watch(
     }
 );
 
+
+
 // Watch các trường khác (page, pageSize, sortBy, sortOrder)
 watch(
-    () => [payload.page, payload.pageSize, payload.sortBy, payload.sortOrder],
+    () => [payload.page, payload.pageSize, payload.sortBy, payload.sortOrder, payload.selectedTypeCustomer],
     () => {
         loadDataForAPI();
     }
 );
+
 
 function reloadData() {
     payload.page = 1;
@@ -107,21 +142,37 @@ function reloadData() {
     payload.search = "";
     payload.sortBy = "";
     payload.sortOrder = "";
+    payload.selectedTypeCustomer = null;
+    loadDataForAPI();
 }
 
 // -----------------------------------
 // Hàm gọi API
 // -----------------------------------
-function loadDataForAPI() {
-    // Chỉ lấy 5 tham số đầu để gửi API
-    const { page, pageSize, search, sortBy, sortOrder } = payload;
-
-    CustomersAPI.paging({ page, pageSize, search, sortBy, sortOrder })
-        .then(result => {
+async function loadDataForAPI() {
+    isLoadingTable.value = true;
+    setTimeout(async () => {
+        try {
+            const { page, pageSize, search, sortBy, sortOrder, selectedTypeCustomer } = payload;
+            const result = await CustomersAPI.paging({
+                page,
+                pageSize,
+                search,
+                sortBy,
+                sortOrder,
+                type: selectedTypeCustomer
+            });
             data.value = result.data.data;
-            payload.totalRows = result.data.meta.total // dữ liệu table
-        });
+            payload.totalRows = result.data.meta.total;
+            isChangeSearch.value = false;
+        } catch (err) {
+
+        } finally {
+            isLoadingTable.value = false;
+        }
+    });
 }
+
 
 // -----------------------------------
 // Con emit -> cha nhận (ví dụ nếu Footer component emit)
@@ -170,12 +221,12 @@ function deleteSelected() {
     const payloadDelete = {
         ids: ids.value, // ["3fa85f64-5717-4562-b3fc-2c963f66afa6", "44b71a89-795b-29c6-b892-08c864661f9c"]
         columnName: "crm_customer_is_deleted",
-        value: 1 // hoặc "1" tùy kiểu cột
+        value: 1
     };
     CustomersAPI.delete(payloadDelete)
         .then(res => {
             if (res.status === 200) { // API update trả về 200 OK
-                alert("Xóa thành công", res.data.updatedCount, " bản ghi!");
+                showToastSuccess("Xóa thành công");
                 reloadData();
                 loadDataForAPI();
                 selectedFromChild.value = [];
@@ -183,20 +234,7 @@ function deleteSelected() {
                 alert(`Có lỗi, status: ${res.status}`);
             }
         })
-        .catch(err => {
-            console.log("API Error:", err);
-
-            const errors = err?.response?.data?.errors;
-
-            if (errors) {
-                // Lấy tất cả lỗi validation nếu có
-                const allErrors = Object.values(errors).flat();
-                alert(allErrors.join("\n"));
-                return;
-            }
-
-            alert("Có lỗi xảy ra");
-        });
+        .catch();
 }
 
 function exportSelected(data) {
@@ -223,12 +261,28 @@ function exportSelected(data) {
         });
         sheet.addRow(rowData);
     });
-    const fileName = "DanhSachKhachHang" + Date.now() + ".xlsx";
+    const fileName = "DanhSachKhachHang_" + Date.now() + ".xlsx";
     // Xuất file
     workbook.xlsx.writeBuffer().then(buffer => {
         saveAs(new Blob([buffer], { type: 'application/octet-stream' }), fileName);
     });
 }
+
+// Modal xác nhận xóa
+const isModalOpen = ref(false);
+
+const showModalDelete = () => {
+    isModalOpen.value = true;
+};
+
+const handleOk = () => {
+    deleteSelected();
+    isModalOpen.value = false; // đóng modal
+};
+
+const handleCancel = () => {
+    isModalOpen.value = false; // đóng modal
+};
 </script>
 
 <style scoped>
@@ -237,8 +291,32 @@ function exportSelected(data) {
     background-color: #e2e4e9;
 }
 
+.ant-select .ant-select-selector::before {
+    content: 'sdasdasdas';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: url('/icon-user.svg') no-repeat center/contain;
+}
+
 
 /* Left toolbar */
+.my-select {
+    margin-right: 16px;
+}
+
+.select-type-customer-font {
+    font-weight: 600;
+}
+
+.icon-left-select {
+    position: relative;
+    left: -137px;
+}
+
 .show-menu {
     border-radius: 4px;
     border: 1px solid #d3d7de;

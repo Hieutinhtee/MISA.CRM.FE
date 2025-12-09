@@ -1,8 +1,9 @@
 <template>
    <div class="table-content d-flex flex1 flex-column">
       <DataTable :value="rows" scrollable scrollHeight="100%" resizableColumns columnResizeMode="expand" lazy
-         removableSort @row-click="handleRowClick" sortMode="single" class="prime-table flex1" dataKey="crmCustomerId"
-         selectionMode="checkbox" v-model:selection="selectedProducts" :customSort="true" @sort="onSort">
+         :loading="props.loading" removableSort @row-click="handleRowClick" sortMode="single" class="prime-table flex1"
+         dataKey="crmCustomerId" selectionMode="checkbox" v-model:selection="selectedProducts" :customSort="true"
+         @sort="onSort">
          <Column selectionMode="multiple" :frozen="true"></Column>
          <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" :sortable="true"
             :style="col.width ? {
@@ -114,6 +115,9 @@ const props = defineProps({
    paginationData: {
       type: Object,
       required: true
+   },
+   loading: {
+      type: Boolean
    }
 });
 
@@ -219,13 +223,16 @@ const handleFormat = (value, type) => {
    /* dễ kéo hơn mặc định */
 }
 
-.p-datatable {
-   min-width: 100%;
+.prime-table {
+   flex: 1 1 auto !important;
+   display: flex;
 }
 
 .p-datatable-wrapper {
-   min-width: 100%;
+   flex: 1;
 }
+
+
 
 /* Footer */
 .footer {
@@ -313,5 +320,44 @@ const handleFormat = (value, type) => {
 .pagination {
    margin-left: 20px;
    gap: 10px;
+}
+
+/* Ẩn arrow, track mặc định và các phần không cần thiết */
+::-webkit-scrollbar-button {
+   display: none;
+   /* ẩn các mũi tên ở đầu/cuối scrollbar */
+}
+
+/* Tùy chỉnh scrollbar */
+::-webkit-scrollbar {
+   margin-top: 100px;
+   width: 8px;
+   /* chiều rộng scrollbar */
+   height: 8px;
+   /* chiều cao scrollbar (nếu scroll ngang) */
+}
+
+::-webkit-scrollbar-thumb {
+   background-color: #c5c9d3;
+   /* màu thanh scroll */
+   border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+   background-color: #f1f1f1;
+   border-radius: 4px;
+   /* màu nền track */
+}
+
+.p-datatable .p-datatable-loading-overlay {
+   background: rgba(255, 255, 255, 0.571) !important;
+}
+
+.p-datatable .p-datatable-loading-icon {
+   width: 50px !important;
+   height: 50px !important;
+   /* tăng kích thước */
+   color: var(--primary-color) !important;
+   /* đổi màu */
 }
 </style>

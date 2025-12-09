@@ -21,62 +21,42 @@
       <div class="title-form title-info">Thông tin chung</div>
       <div class="d-flex">
          <div class="form-body">
-
             <div class="d-flex gap80">
                <div class="flex-item">
                   <ms-input-text label="Mã khách hàng" :column="false" readonly
                      v-model="formDataEdit.crmCustomerCode"></ms-input-text>
                   <ms-input-text label="Tên khách hàng" :column="false" v-model="formDataEdit.crmCustomerName"
-                     required></ms-input-text>
-
-               </div>
-               <div class="flex-item">
-                  <ms-input-text label="Loại khách hàng" :column="false" v-model="formDataEdit.crmCustomerType"
-                     :options="crmCustomerTypeOption" :type="'select'"></ms-input-text>
-                  <ms-input-text label="Mã số thuế" :column="false"
-                     v-model="formDataEdit.crmCustomerTaxCode"></ms-input-text>
-
-               </div>
-            </div>
-
-
-         </div>
-      </div>
-      <div class="title-form title-info">Thông tin giao hàng</div>
-      <div class="d-flex">
-         <div class="form-body">
-            <div class="d-flex gap80">
-               <div class="flex-item">
-                  <ms-input-text label="Email" :column="false" v-model="formDataEdit.crmCustomerEmail"></ms-input-text>
-                  <ms-input-text label="Địa chỉ liên hệ" :column="false"
-                     v-model="formDataEdit.crmCustomerAddress"></ms-input-text>
-               </div>
-               <div class="flex-item">
-                  <ms-input-text label="Số điện thoại" :column="false"
-                     v-model="formDataEdit.crmCustomerPhoneNumber"></ms-input-text>
-                  <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
-                     v-model="formDataEdit.crmCustomerShippingAddress"></ms-input-text>
-               </div>
-            </div>
-         </div>
-      </div>
-      <div class="title-form title-info">Thông tin hóa đơn</div>
-      <div class="d-flex">
-         <div class="form-body">
-            <div class="d-flex gap80">
-               <div class="flex-item">
+                     ref="nameRef" required></ms-input-text>
+                  <ms-input-text label="Email" :field="'crmCustomerEmail'" :column="false" ref="emailRef"
+                     v-model="formDataEdit.crmCustomerEmail" @blur-check="handleBlurEmail"></ms-input-text>
                   <ms-input-text label="Ngày mua gần nhất" :column="false"
                      v-model="formDataEdit.crmCustomerLastPurchaseDate" :type="'date'">
                   </ms-input-text>
                   <ms-input-text label="Mã hàng hóa" :column="false"
                      v-model="formDataEdit.crmCustomerPurchasedItemCode"></ms-input-text>
+                  <ms-input-text label="Mã số thuế" :column="false"
+                     v-model="formDataEdit.crmCustomerTaxCode"></ms-input-text>
+
                </div>
                <div class="flex-item">
+                  <ms-input-text label="Loại khách hàng" :column="false" v-model="formDataEdit.crmCustomerType"
+                     :options="crmCustomerTypeOption" :type="'select'"></ms-input-text>
+                  <ms-input-text label="Số điện thoại" :field="'crmCustomerPhoneNumber'" :column="false" ref="phoneRef"
+                     v-model="formDataEdit.crmCustomerPhoneNumber" @blur-check="handleBlurPhone"></ms-input-text>
+                  <ms-input-text label="Địa chỉ liên hệ" :column="false"
+                     v-model="formDataEdit.crmCustomerAddress"></ms-input-text>
+
+                  <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
+                     v-model="formDataEdit.crmCustomerShippingAddress"></ms-input-text>
                   <ms-input-text label="Tên hàng hóa đã mua" :column="false"
                      v-model="formDataEdit.crmCustomerPurchasedItemName"></ms-input-text>
                </div>
             </div>
+
+
          </div>
+
+
       </div>
    </div>
 </template>
@@ -119,8 +99,6 @@ const crmCustomerTypeOption = ref([
 // API
 import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
 
-
-
 function editCustomer() {
    const payload = { ...formDataEdit.value, crmCustomerLastPurchaseDate: convertToISO(formDataEdit.value.crmCustomerLastPurchaseDate), crmCustomerImage: 'img' };
    CustomersAPI.update(id, payload).then(res => {
@@ -145,15 +123,91 @@ function editCustomer() {
 
 }
 
+function validateInput(payload, inRef) {
+   const apiPayload = {
+      propertyName: payload.field,
+      value: payload.value,
+      ignoreId: id // hoặc lấy từ formData nếu edit
+   };
+
+   CustomersAPI.checkDuplicate(apiPayload)
+      .catch(err => {
+         // Bắt lỗi status 400 từ BE
+         const userMsg = err?.response?.data?.error?.userMsg;
+         if (userMsg) {
+            inRef.value?.setError(userMsg);
+         }
+         return
+      });
+}
+
+//Chuyển kiểu date
 function convertToISO(dateObj) {
    if (!dateObj) return null;
    return dayjs(dateObj).toISOString();
 }
 
-
+//Quay lại trang list
 function backToList() {
    router.push('/customer/list');
 }
+
+//Validate khi blur
+const emailRef = ref(null);
+const phoneRef = ref(null);
+
+function handleBlurEmail(payload) {
+   const value = payload.value?.trim() || "";
+
+   // 1. Check rỗng
+   if (!value) {
+      emailRef.value?.setError("Không được để trống email");
+      return;
+   }
+
+   // 2. Check định dạng email chuẩn
+   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+   if (!emailRegex.test(value)) {
+      emailRef.value?.setError("Email không đúng định dạng");
+      return;
+   }
+
+   validateInput(payload, emailRef);
+
+   // 3. Nếu ok thì clear lỗi
+   emailRef.value?.clearError();
+}
+
+function handleBlurPhone(payload) {
+   const value = payload.value?.trim() || "";
+
+   // 1. Check rỗng
+   if (!value) {
+      phoneRef.value?.setError("Không được để trống số điện thoại");
+      return;
+   }
+
+   // 2. Check chỉ chứa số
+   const numberRegex = /^[0-9]+$/;
+   if (!numberRegex.test(value)) {
+      phoneRef.value?.setError("Số điện thoại chỉ được chứa chữ số");
+      return;
+   }
+
+   // 3. Check độ dài 10-11
+   if (value.length < 10 || value.length > 11) {
+      phoneRef.value?.setError("Số điện thoại phải có 10 - 11 số");
+      return;
+   }
+
+
+   validateInput(payload, phoneRef); // truyền thêm ref tương ứng
+
+   // 5. Nếu ok thì clear lỗi
+   phoneRef.value?.clearError();
+}
+
+
 
 onMounted(async () => {
    const res = await CustomersAPI.getById(id)

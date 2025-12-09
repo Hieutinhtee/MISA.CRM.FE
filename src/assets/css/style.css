@@ -11,7 +11,7 @@ html {
 
 :root {
   --primary-color: #4262f0;
-  --ant-primary-color: #4262f0;
+  --ant-primary-color: #4262f0 !important;
 }
 
 .btn-grey {
@@ -23,4 +23,39 @@ html {
 .btn-grey:hover {
   background-color: #c5c9d3;
   border-radius: 50%;
+}
+
+.Vue-Toastification__toast {
+  border-radius: 4px !important;
+}
+
+.Vue-Toastification__toast-body {
+  font-size: 14px !important;
+}
+
+.Vue-Toastification__progress-bar {
+  height: 3px !important;
+}
+
+.Vue-Toastification__toast--success {
+  background-color: #31b482 !important;
+}
+
+.Vue-Toastification__toast--error {
+  background-color: #f51419 !important;
+}
+
+.Vue-Toastification__toast--info {
+  background-color: var(--primary-color) !important;
+}
+
+/* Ẩn icon bên trái tất cả toast */
+.Toastify__toast-icon {
+  display: none !important;
+}
+
+
+
+.ant-btn-primary {
+  background-color: var(--primary-color) !important;
 }

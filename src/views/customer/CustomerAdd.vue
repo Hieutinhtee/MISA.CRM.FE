@@ -10,8 +10,8 @@
          <ms-text-color type="primary">Sửa bố cục</ms-text-color>
       </div>
       <div class="right-bar d-flex align-content-center">
-         <ms-button class="btn-cancel" type="outline">Hủy bỏ</ms-button>
-         <ms-button type="outline-primary">Lưu và thêm</ms-button>
+         <ms-button class="btn-cancel" type="outline" @click="backList">Hủy bỏ</ms-button>
+         <ms-button type="outline-primary" @click="createAndResetCustomer">Lưu và thêm</ms-button>
          <ms-button type="primary" @click="createCustomer">Lưu</ms-button>
       </div>
    </div>
@@ -26,61 +26,37 @@
                <div class="flex-item">
                   <ms-input-text label="Mã khách hàng" :column="false" readonly
                      v-model="formData.crmCustomerCode"></ms-input-text>
-                  <ms-input-text label="Tên khách hàng" :column="false" v-model="formData.crmCustomerName"
+                  <ms-input-text label="Tên khách hàng" :column="false" v-model="formData.crmCustomerName" ref="nameRef"
                      required></ms-input-text>
-                  <ms-input-text label="Email" :column="false" v-model="formData.crmCustomerEmail"></ms-input-text>
-               </div>
-               <div class="flex-item">
-                  <ms-input-text label="Loại khách hàng" :column="false" v-model="formData.crmCustomerType"
-                     :options="crmCustomerTypeOption" :type="'select'"></ms-input-text>
-                  <ms-input-text label="Mã số thuế" :column="false"
-                     v-model="formData.crmCustomerTaxCode"></ms-input-text>
-
-               </div>
-            </div>
-
-
-         </div>
-      </div>
-      <div class="title-form title-info">Thông tin giao hàng</div>
-      <div class="d-flex">
-         <div class="form-body">
-            <div class="d-flex gap80">
-               <div class="flex-item">
-                  <ms-input-text label="Số điện thoại" :column="false" v-model="formData.crmCustomerPhoneNumber" :rules="[
-                     v => !!v || 'Không được để trống số điện thoại',
-                     v => /^[0-9]+$/.test(v) || 'Số điện thoại chỉ được chứa chữ số',
-                     v => (v.length >= 10 && v.length <= 11) || 'Số điện thoại phải có 10 - 11 số'
-                  ]"></ms-input-text>
-                  <ms-input-text label="Địa chỉ liên hệ" :column="false"
-                     v-model="formData.crmCustomerAddress"></ms-input-text>
-               </div>
-               <div class="flex-item">
-
-                  <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
-                     v-model="formData.crmCustomerShippingAddress"></ms-input-text>
-               </div>
-            </div>
-         </div>
-      </div>
-      <div class="title-form title-info">Thông tin hóa đơn</div>
-      <div class="d-flex">
-         <div class="form-body">
-            <div class="d-flex gap80">
-               <div class="flex-item">
+                  <ms-input-text label="Email" :field="'crmCustomerEmail'" :column="false" ref="emailRef"
+                     v-model="formData.crmCustomerEmail" @blur-check="handleBlurEmail"></ms-input-text>
                   <ms-input-text label="Ngày mua gần nhất" :column="false"
                      v-model="formData.crmCustomerLastPurchaseDate" :type="'date'">
                   </ms-input-text>
                   <ms-input-text label="Mã hàng hóa" :column="false"
                      v-model="formData.crmCustomerPurchasedItemCode"></ms-input-text>
+                  <ms-input-text label="Mã số thuế" :column="false"
+                     v-model="formData.crmCustomerTaxCode"></ms-input-text>
+
+
                </div>
                <div class="flex-item">
+                  <ms-input-text label="Loại khách hàng" :column="false" v-model="formData.crmCustomerType"
+                     :options="crmCustomerTypeOption" :type="'select'"></ms-input-text>
+                  <ms-input-text label="Số điện thoại" :field="'crmCustomerPhoneNumber'" :column="false" ref="phoneRef"
+                     v-model="formData.crmCustomerPhoneNumber" @blur-check="handleBlurPhone"></ms-input-text>
+                  <ms-input-text label="Địa chỉ liên hệ" :column="false"
+                     v-model="formData.crmCustomerAddress"></ms-input-text>
+
+                  <ms-input-text label="Địa chỉ (Giao hàng)" :column="false"
+                     v-model="formData.crmCustomerShippingAddress"></ms-input-text>
                   <ms-input-text label="Tên hàng hóa đã mua" :column="false"
                      v-model="formData.crmCustomerPurchasedItemName"></ms-input-text>
                </div>
             </div>
          </div>
       </div>
+
    </div>
 </template>
 
@@ -89,7 +65,14 @@
 import MsTextColor from '@/components/ms-button/MsTextColor.vue';
 import MsButton from '@/components/ms-button/MsButton.vue';
 import MsInputText from '../../components/ms-input/MsInputText.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
+import { useToastMessage } from '@/composables/useToastMessage';
+
+const { showToastSuccess, showToastError, showToastInfo } = useToastMessage();
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+const nameRef = ref(null);
 
 const formData = ref({
    crmCustomerCode: '',  // Giá trị mặc định, có thể fetch từ API
@@ -112,9 +95,84 @@ const crmCustomerTypeOption = ref([
    { value: 'VIP', label: 'VIP' }
 ]);
 
+const emailRef = ref(null);
+const phoneRef = ref(null);
+
+function handleBlurEmail(payload) {
+   const value = payload.value?.trim() || "";
+
+   // 1. Check rỗng
+   if (!value) {
+      emailRef.value?.setError("Không được để trống email");
+      return;
+   }
+
+   // 2. Check định dạng email chuẩn
+   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+   if (!emailRegex.test(value)) {
+      emailRef.value?.setError("Email không đúng định dạng");
+      return;
+   }
+
+   validateInput(payload, emailRef);
+
+   // 3. Nếu ok thì clear lỗi
+   emailRef.value?.clearError();
+}
+
+function handleBlurPhone(payload) {
+   const value = payload.value?.trim() || "";
+
+   // 1. Check rỗng
+   if (!value) {
+      phoneRef.value?.setError("Không được để trống số điện thoại");
+      return;
+   }
+
+   // 2. Check chỉ chứa số
+   const numberRegex = /^[0-9]+$/;
+   if (!numberRegex.test(value)) {
+      phoneRef.value?.setError("Số điện thoại chỉ được chứa chữ số");
+      return;
+   }
+
+   // 3. Check độ dài 10-11
+   if (value.length < 10 || value.length > 11) {
+      phoneRef.value?.setError("Số điện thoại phải có 10 - 11 số");
+      return;
+   }
+
+
+   validateInput(payload, phoneRef); // truyền thêm ref tương ứng
+
+   // 5. Nếu ok thì clear lỗi
+   phoneRef.value?.clearError();
+}
+
+function backList() {
+   router.push('/customer/list');
+
+}
 // API
 import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
 
+function validateInput(payload, inRef) {
+   const apiPayload = {
+      propertyName: payload.field,
+      value: payload.value,
+      ignoreId: null // hoặc lấy từ formData nếu edit
+   };
+
+   CustomersAPI.checkDuplicate(apiPayload)
+      .catch(err => {
+         // Bắt lỗi status 400 từ BE
+         const userMsg = err?.response?.data?.error?.userMsg;
+         if (userMsg) {
+            inRef.value?.setError(userMsg);
+         }
+         return
+      });
+}
 
 function fetchCustomerCode() {
    CustomersAPI.getNextCustomerCode()
@@ -133,25 +191,12 @@ function fetchCustomerCode() {
 function createCustomer() {
    const payload = { ...formData.value, crmCustomerLastPurchaseDate: convertToISO(formData.value.crmCustomerLastPurchaseDate) };
    CustomersAPI.create(payload).then(res => {
-      // Chỉ chạy khi status 201
-      alert("Tạo thành công!");
-
+      if (res.status === 201 || res.status === 200) {
+         showToastSuccess("Thêm mới khách hàng thành công")
+         router.push('/customer/list');
+      }
    })
-      .catch(err => {
-         console.log("API Error:", err);
-
-         const errors = err?.response?.data?.errors;
-
-         if (errors) {
-            // Lấy tất cả lỗi validation
-            const allErrors = Object.values(errors).flat();
-            alert(allErrors.join("\n"));
-            return;
-         }
-
-         alert("Có lỗi xảy ra");
-      });
-
+      .catch();
 }
 
 function convertToISO(dateStr) {
@@ -169,9 +214,53 @@ function convertToISO(dateStr) {
    return date.toISOString();
 }
 
+function resetForm() {
+   formData.value = {
+      crmCustomerCode: '',
+      crmCustomerType: '',
+      crmCustomerName: '',
+      crmCustomerTaxCode: '',
+      crmCustomerEmail: '',
+      crmCustomerPhoneNumber: '',
+      crmCustomerAddress: '',
+      crmCustomerShippingAddress: '',
+      crmCustomerLastPurchaseDate: '',
+      crmCustomerPurchasedItemName: '',
+      crmCustomerPurchasedItemCode: '',
+      crmCustomerImage: 'img'
+   };
+
+   // Xóa lỗi
+   emailRef.value?.clearError();
+   phoneRef.value?.clearError();
+
+   // Lấy lại mã khách hàng mới
+   fetchCustomerCode();
+}
+
+// Lưu và reset
+function createAndResetCustomer() {
+   const payload = { ...formData.value, crmCustomerLastPurchaseDate: convertToISO(formData.value.crmCustomerLastPurchaseDate) };
+   CustomersAPI.create(payload)
+      .then(res => {
+         if (res.status === 201 || res.status === 200) {
+            showToastSuccess("Thêm mới khách hàng thành công")
+            resetForm(); // reset toàn bộ input
+         }
+      })
+      .catch();
+}
+
 
 onMounted(() => {
    fetchCustomerCode(); // Gọi khi component mount
+   // Sử dụng nextTick để chắc chắn DOM đã render xong
+   nextTick(() => {
+      if (nameRef.value?.$el) {
+         // $el là DOM element của component
+         nameRef.value.$el.querySelector('input')?.focus();
+      }
+   });
 });
 </script>
 
@@ -222,7 +311,7 @@ onMounted(() => {
 }
 
 .title-info {
-   margin-bottom: 18px;
+   margin-bottom: 24px;
 }
 
 
