@@ -27,7 +27,7 @@ class CustomersAPI extends BaseAPI {
    }
 
    /**
-    * Hàm gửi exsel để import các bản ghi
+    * Hàm gửi excel để import các bản ghi
     * @returns {string} mã khách hàng
     * createdby: TMHieu - 9.12.2025
     */
@@ -37,6 +37,15 @@ class CustomersAPI extends BaseAPI {
             "Content-Type": "multipart/form-data"
          }
       });
+   }
+
+   /**
+    * Hàm xóa hàng loạt khách hàng
+    * @returns {int} số bản ghi khách hàng xóa thành công
+    * createdby: TMHieu - 9.12.2025
+    */
+   deleteCustomer(payload) {
+      return api.put(`${this.controller}/soft-delete-many`, payload);
    }
 
 

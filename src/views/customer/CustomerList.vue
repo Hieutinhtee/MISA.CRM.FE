@@ -256,12 +256,9 @@ console.log(ids.value);
 
 
 function deleteSelected() {
-    const payloadDelete = {
-        ids: ids.value, // ["3fa85f64-5717-4562-b3fc-2c963f66afa6", "44b71a89-795b-29c6-b892-08c864661f9c"]
-        columnName: "crm_customer_is_deleted",
-        value: 1
-    };
-    CustomersAPI.delete(payloadDelete)
+    const payloadDelete = ids.value; // ["3fa85f64-5717-4562-b3fc-2c963f66afa6", "44b71a89-795b-29c6-b892-08c864661f9c"]
+
+    CustomersAPI.deleteCustomer(payloadDelete)
         .then(res => {
             if (res.status === 200) { // API update trả về 200 OK
                 showToastSuccess("Xóa thành công");
@@ -292,7 +289,7 @@ function changeTypeCustomer() {
         .catch();
 }
 
-function exportSelected(data) {
+function exportSelected() {
     console.log("Xuất Excel:", selectedFromChild.value);
 
     const workbook = new ExcelJS.Workbook();
@@ -385,7 +382,7 @@ const handleOkExcelImport = async () => {
 
     try {
 
-        CustomersAPI.excelImport(formData)
+        await CustomersAPI.excelImport(formData);
         showToastSuccess("Nhập thành công!");
         isModalOpen.value = false;
         fileList.value = [];
