@@ -69,12 +69,22 @@ function handleDateChange(date, dateString) {
 
 // Hàm emit lên để cha validate
 async function validate() {
+   // Nếu required và trống → báo lỗi
+   if (props.required && (!model.value || model.value.toString().trim() === "")) {
+      errorMessage.value = `${props.label} không được để trống`;
+   } else {
+      errorMessage.value = "";
+   }
+
+   // Emit ra ngoài để cha có thể validate tổng thể
    emit("blur-check", {
       label: props.label,
       field: props.field,
-      value: model.value
+      value: model.value,
+      error: errorMessage.value
    });
 }
+
 
 watch(() => props.externalError, (val) => {
    errorMessage.value = val;

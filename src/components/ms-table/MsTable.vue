@@ -2,14 +2,21 @@
    <div class="table-content d-flex flex1 flex-column">
       <DataTable :value="rows" scrollable scrollHeight="100%" resizableColumns columnResizeMode="expand" lazy
          :loading="props.loading" removableSort @row-click="handleRowClick" sortMode="single" class="prime-table flex1"
-         dataKey="crmCustomerId" selectionMode="checkbox" v-model:selection="selectedProducts" :customSort="true"
-         @sort="onSort">
+         dataKey="crmCustomerId" selectionMode="checkbox" v-model:selection="selectedProducts" :customSort="true">
          <Column selectionMode="multiple" :frozen="true"></Column>
-         <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" :sortable="true"
-            :style="col.width ? {
+         <Column v-for="col in columns" :key="col.field" :field="col.field" :sortable="true"
+            @click="onSortClick(col.field)" :style="col.width ? {
                minWidth: col.width + 'px',
                maxWidth: col.width + 'px'
             } : null">
+            <template #header>
+               <div class="sortable-header" @click="onSortClick(col.field)" style="cursor: pointer;">
+                  {{ col.header }}
+                  <span v-if="sortState.field === col.field" style="margin-left: 4px;">
+                     {{ sortState.order === 'ASC' ? '' : sortState.order === 'DESC' ? '' : '' }}
+                  </span>
+               </div>
+            </template>
             <template #body="slotProps">
                <div class="ellipsis" :title="slotProps.data[col.field]">
                   <div v-if="!slotProps.data[col.field]">-</div>
@@ -86,8 +93,12 @@ import MsTextColor from '@/components/ms-button/MsTextColor.vue';
 import { formatNumber, formatDate, formatText } from '@/utils/formatter.js';
 
 const pageSize = ref(100);
-const emit = defineEmits(["update:pagination", "row-click", "update:selectedProducts"]);
+const emit = defineEmits(["update:pagination", "row-click", "update:selectedProducts", "update:sort-change"]);
 
+const sortState = ref({
+   field: null,       // cột đang sort
+   order: null        // 'ASC' | 'DESC' | null
+});
 
 //Khai báo props
 const props = defineProps({
@@ -189,6 +200,30 @@ watch(selectedProducts, (newVal) => {
 function onSort(e) {
    console.log("Vừa sort");
 }
+
+function onSortClick(clickedField) {
+   if (sortState.value.field === clickedField) {
+      // Cột hiện tại, toggle thứ tự: null → ASC → DESC → null
+      if (sortState.value.order === null) {
+         sortState.value.order = "ASC";
+      } else if (sortState.value.order === "ASC") {
+         sortState.value.order = "DESC";
+      } else {
+         sortState.value.order = null;
+      }
+   } else {
+      // Cột khác, reset cột khác, mặc định tăng dần
+      sortState.value.field = clickedField;
+      sortState.value.order = "ASC";
+   }
+
+   // Emit lên cha
+   emit("update:sort-change", {
+      field: sortState.value.field,
+      sortOrder: sortState.value.order
+   });
+}
+
 //---------------------Row Click để edit-------------------------------------------------------
 
 function handleRowClick(event) {
@@ -221,6 +256,15 @@ const handleFormat = (value, type) => {
 .prime-table .p-column-resizer {
    width: 16px;
    /* dễ kéo hơn mặc định */
+}
+
+.sortable-header {
+   width: 100%;
+   padding: 12px 0 12px 0;
+}
+
+.p-datatable .p-column-header-content {
+   padding: 0 10px 0 14px !important;
 }
 
 .prime-table {

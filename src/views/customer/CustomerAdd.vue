@@ -29,7 +29,7 @@
                   <ms-input-text label="Tên khách hàng" :column="false" v-model="formData.crmCustomerName" ref="nameRef"
                      required></ms-input-text>
                   <ms-input-text label="Email" :field="'crmCustomerEmail'" :column="false" ref="emailRef"
-                     v-model="formData.crmCustomerEmail" @blur-check="handleBlurEmail"></ms-input-text>
+                     v-model="formData.crmCustomerEmail" @blur-check="handleBlurEmail" required></ms-input-text>
                   <ms-input-text label="Ngày mua gần nhất" :column="false"
                      v-model="formData.crmCustomerLastPurchaseDate" :type="'date'">
                   </ms-input-text>
@@ -44,7 +44,7 @@
                   <ms-input-text label="Loại khách hàng" :column="false" v-model="formData.crmCustomerType"
                      :options="crmCustomerTypeOption" :type="'select'"></ms-input-text>
                   <ms-input-text label="Số điện thoại" :field="'crmCustomerPhoneNumber'" :column="false" ref="phoneRef"
-                     v-model="formData.crmCustomerPhoneNumber" @blur-check="handleBlurPhone"></ms-input-text>
+                     v-model="formData.crmCustomerPhoneNumber" @blur-check="handleBlurPhone" required></ms-input-text>
                   <ms-input-text label="Địa chỉ liên hệ" :column="false"
                      v-model="formData.crmCustomerAddress"></ms-input-text>
 
@@ -69,7 +69,7 @@ import { ref, onMounted, nextTick } from 'vue';
 import { useToastMessage } from '@/composables/useToastMessage';
 
 const { showToastSuccess, showToastError, showToastInfo } = useToastMessage();
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 const router = useRouter();
 
 const nameRef = ref(null);
@@ -262,6 +262,55 @@ onMounted(() => {
       }
    });
 });
+
+// upload ảnh
+const fileInput = ref(null);
+const selectedFile = ref(null);
+const previewUrl = ref(null);
+
+
+
+function triggerFileInput() {
+   fileInput.value.click();
+}
+
+function handleFileChange(event) {
+   const file = event.target.files[0];
+   if (!file) return;
+
+   // Kiểm tra loại file
+   if (!file.type.startsWith("image/")) {
+      showToastError("Vui lòng chọn file ảnh hợp lệ! (jpg, png)");
+      return;
+   }
+
+   selectedFile.value = file;
+
+   // Preview
+   const reader = new FileReader();
+   reader.onload = (e) => {
+      previewUrl.value = e.target.result;
+   };
+   reader.readAsDataURL(file);
+}
+
+function saveImage() {
+   if (!selectedFile.value) return;
+
+   // Thay tên thành customerId.jpg
+   const newFileName = `${formData.value.crmCustomerCode}.jpg`;
+
+   // Lưu vào folder /src/img (chỉ demo trong FE)
+   // Trong thực tế Vue không cho ghi file trực tiếp
+   // Nếu muốn lưu thật → cần gửi lên backend
+   const blob = new Blob([selectedFile.value], { type: selectedFile.value.type });
+   const link = document.createElement("a");
+   link.href = URL.createObjectURL(blob);
+   link.download = newFileName;
+   link.click();
+
+   alert(`Ảnh sẽ được lưu với tên: ${newFileName}`);
+}
 </script>
 
 <style scoped>

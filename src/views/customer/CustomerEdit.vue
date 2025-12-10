@@ -11,7 +11,7 @@
       </div>
       <div class="right-bar d-flex align-content-center">
          <ms-button class="btn-cancel" type="outline" @click="backToList">Hủy bỏ</ms-button>
-         <ms-button type="outline-primary">Lưu và thêm</ms-button>
+         <ms-button type="outline-primary" @click="updateAndReset">Lưu và thêm</ms-button>
          <ms-button type="primary" @click="editCustomer">Lưu</ms-button>
       </div>
    </div>
@@ -28,7 +28,7 @@
                   <ms-input-text label="Tên khách hàng" :column="false" v-model="formDataEdit.crmCustomerName"
                      ref="nameRef" required></ms-input-text>
                   <ms-input-text label="Email" :field="'crmCustomerEmail'" :column="false" ref="emailRef"
-                     v-model="formDataEdit.crmCustomerEmail" @blur-check="handleBlurEmail"></ms-input-text>
+                     v-model="formDataEdit.crmCustomerEmail" @blur-check="handleBlurEmail" required></ms-input-text>
                   <ms-input-text label="Ngày mua gần nhất" :column="false"
                      v-model="formDataEdit.crmCustomerLastPurchaseDate" :type="'date'">
                   </ms-input-text>
@@ -42,7 +42,8 @@
                   <ms-input-text label="Loại khách hàng" :column="false" v-model="formDataEdit.crmCustomerType"
                      :options="crmCustomerTypeOption" :type="'select'"></ms-input-text>
                   <ms-input-text label="Số điện thoại" :field="'crmCustomerPhoneNumber'" :column="false" ref="phoneRef"
-                     v-model="formDataEdit.crmCustomerPhoneNumber" @blur-check="handleBlurPhone"></ms-input-text>
+                     v-model="formDataEdit.crmCustomerPhoneNumber" @blur-check="handleBlurPhone"
+                     required></ms-input-text>
                   <ms-input-text label="Địa chỉ liên hệ" :column="false"
                      v-model="formDataEdit.crmCustomerAddress"></ms-input-text>
 
@@ -67,11 +68,13 @@ import MsTextColor from '@/components/ms-button/MsTextColor.vue';
 import MsButton from '@/components/ms-button/MsButton.vue';
 import MsInputText from '../../components/ms-input/MsInputText.vue';
 import dayjs from 'dayjs'
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
+import { useToastMessage } from '@/composables/useToastMessage';
+const { showToastSuccess, showToastError, showToastInfo } = useToastMessage();
 
-var date = dayjs('2025-12-06T00:00:00');
 
+const router = useRouter();
 const route = useRoute()
 const id = route.params.id
 
@@ -102,25 +105,10 @@ import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
 function editCustomer() {
    const payload = { ...formDataEdit.value, crmCustomerLastPurchaseDate: convertToISO(formDataEdit.value.crmCustomerLastPurchaseDate), crmCustomerImage: 'img' };
    CustomersAPI.update(id, payload).then(res => {
-      // Chỉ chạy khi status 201
-      alert("Sửa thành công!");
+      showToastSuccess("Sửa thành công!");
 
    })
-      .catch(err => {
-         console.log("API Error:", err);
-
-         const errors = err?.response?.data?.errors;
-
-         if (errors) {
-            // Lấy tất cả lỗi validation
-            const allErrors = Object.values(errors).flat();
-            alert(allErrors.join("\n"));
-            return;
-         }
-
-         alert("Có lỗi xảy ra");
-      });
-
+      .catch();
 }
 
 function validateInput(payload, inRef) {
@@ -132,7 +120,6 @@ function validateInput(payload, inRef) {
 
    CustomersAPI.checkDuplicate(apiPayload)
       .catch(err => {
-         // Bắt lỗi status 400 từ BE
          const userMsg = err?.response?.data?.error?.userMsg;
          if (userMsg) {
             inRef.value?.setError(userMsg);
@@ -207,7 +194,14 @@ function handleBlurPhone(payload) {
    phoneRef.value?.clearError();
 }
 
-
+function updateAndReset() {
+   const payload = { ...formDataEdit.value, crmCustomerLastPurchaseDate: convertToISO(formDataEdit.value.crmCustomerLastPurchaseDate), crmCustomerImage: 'img' };
+   CustomersAPI.update(id, payload).then(res => {
+      showToastSuccess("Sửa thành công!");
+      router.push('/customer/add');
+   })
+      .catch();
+}
 
 onMounted(async () => {
    const res = await CustomersAPI.getById(id)

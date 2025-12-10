@@ -56,4 +56,13 @@ export default class BaseAPI {
         return api.post(`${this.controller}/bulk-update`, body);
     }
 
+    /**
+     * Hàm sửa 1 hoặc nhiều loại khách hàng
+     * @param {*} body 
+     * createdby: TMHieu - 7.12.2025
+     */
+    bulkType(body) {
+        return api.post(`${this.controller}/update-type`, body);
+    }
+
 }

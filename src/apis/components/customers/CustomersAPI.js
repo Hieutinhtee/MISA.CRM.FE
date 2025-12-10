@@ -26,6 +26,19 @@ class CustomersAPI extends BaseAPI {
       return api.get(`${this.controller}/next-code`);
    }
 
+   /**
+    * Hàm gửi exsel để import các bản ghi
+    * @returns {string} mã khách hàng
+    * createdby: TMHieu - 9.12.2025
+    */
+   excelImport(formData) {
+      api.post(`${this.controller}/import`, formData, {
+         headers: {
+            "Content-Type": "multipart/form-data"
+         }
+      });
+   }
+
 
 }
 

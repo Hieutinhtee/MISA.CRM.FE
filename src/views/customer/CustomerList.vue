@@ -21,7 +21,7 @@
                         class="select-type-customer-font">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LKHA</span></a-select-option>
 
             </a-select>
-            <div>{{ }}</div>
+
             <ms-text-color type="primary">Sửa</ms-text-color>
             <div class="btn-grey">
                 <div class="icon-reload" @click="reloadData"></div>
@@ -34,7 +34,11 @@
                 @click="exportSelected">
                 Xuất Excel các bản ghi
             </ms-button>
-
+            <ms-button v-if="selectedFromChild.length > 0" type="outline-primary" class="m-l-12"
+                @click="showModalChangeType">Gán
+                loại
+                khách
+                hàng</ms-button>
         </div>
         <div class="right-bar d-flex align-content-center gap8">
             <div class="search-ai d-flex align-content-center">
@@ -46,19 +50,40 @@
                 <div class="icon-headquarter-ai"></div>
             </div>
             <ms-button iconLeft="plus" type="primary" @click="goToAdd">Thêm</ms-button>
-            <ms-button iconLeft="import" type="outline-primary">Nhập từ Excel</ms-button>
+            <ms-button iconLeft="import" type="outline-primary" @click="showModalExcelImport">Nhập từ Excel</ms-button>
             <ms-button iconLeft="show-more" type="outline"></ms-button>
             <ms-button iconLeft="list" iconRight="down" type="outline"></ms-button>
         </div>
     </div>
     <div class="content d-flex flex1 flex-row">
         <ms-table :columns="cols" :rows="data" :pagination-data="payload" @row-click="onRowClick"
-            :loading="isLoadingTable" v-model:selectedProducts="selectedFromChild"
-            @update:pagination="onPaginationUpdate"></ms-table>
+            @update:sort-change="handleSortChange" :loading="isLoadingTable"
+            v-model:selectedProducts="selectedFromChild" @update:pagination="onPaginationUpdate"></ms-table>
     </div>
     <a-modal v-model:open="isModalOpen" title="Xác nhận xóa" @ok="handleOk" @cancel="handleCancel" ok-text="Đồng ý"
         cancel-text="Hủy">
         <p>Bạn có chắc chắn xóa {{ ids.length }} bản ghi?</p>
+    </a-modal>
+
+    <a-modal v-model:open="isModalOpenChangeType" title="Xác nhận sửa loại khách hàng" @ok="handleOkChangeType"
+        @cancel="handleCancelChangeType" ok-text="Sửa" cancel-text="Hủy">
+        <p class="m-b-12">Chọn loại khách hàng cho {{ ids.length }} bản ghi</p>
+        <a-select style="width: 180px" v-model:value="selectedChangeTypeCustomer" lineHeight="32px">
+            <template #suffixIcon>
+                <div class="icon-down"></div>
+            </template>
+            <a-select-option :value="'VIP'">VIP</a-select-option>
+            <a-select-option :value="'LKHA'">LKHA</a-select-option>
+            <a-select-option :value="'NBH01'">NBH01</a-select-option>
+        </a-select>
+    </a-modal>
+    <a-modal v-model:open="isModalOpenExcelImport" title="Nhập từ Excel" @ok="handleOkExcelImport"
+        @cancel="handleCancelExcelImport" ok-text="Nhập" cancel-text="Hủy">
+        <a-upload-dragger v-model:fileList="fileList" name="file" :multiple="false" accept=".xlsx"
+            :beforeUpload="beforeUpload" @change="handleChange">
+            <p class="ant-upload-text">Click hoặc kéo file vào đây</p>
+            <p class="ant-upload-hint">Hỗ trợ nhập file Excel (xlsx)</p>
+        </a-upload-dragger>
     </a-modal>
 </template>
 
@@ -72,7 +97,6 @@ import CustomersAPI from '@/apis/components/customers/CustomersAPI.js';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { formatNumber, formatDate, formatText } from '@/utils/formatter.js';
-import { Modal, Button } from "ant-design-vue";
 import { useToastMessage } from '@/composables/useToastMessage';
 
 const { showToastSuccess, showToastError, showToastInfo } = useToastMessage();
@@ -80,21 +104,23 @@ const { showToastSuccess, showToastError, showToastInfo } = useToastMessage();
 const isLoadingTable = ref(true);
 const data = ref([]);
 const selectedFromChild = ref([]);
-
+const selectedChangeTypeCustomer = ref('VIP');
 
 
 
 // Columns-----------------------------------------------------------
 const cols = [
     { field: "crmCustomerType", header: "Loại khách hàng", width: 175 },
-    { field: "crmCustomerCode", header: "Mã khách hàng", width: 280 },
+    { field: "crmCustomerCode", header: "Mã khách hàng", width: 240 },
     { field: "crmCustomerName", header: "Tên khách hàng", width: 300 },
     { field: "crmCustomerTaxCode", header: "Mã số thuế", width: 160 },
-    { field: "crmCustomerShippingAddress", header: "Địa chỉ (Giao hàng)", width: 210 },
+    { field: "crmCustomerShippingAddress", header: "Địa chỉ (Giao hàng)", width: 280 },
     { field: "crmCustomerPhoneNumber", header: "Điện thoại", width: 160 },
     { field: "crmCustomerLastPurchaseDate", header: "Ngày mua hàng gần nhất", width: 240, type: "date" },
     { field: "crmCustomerPurchasedItemCode", header: "Hàng hóa đã mua", width: 200 },
-    { field: "crmCustomerPurchasedItemName", header: "Tên hàng hóa đã mua", width: 300 }
+    { field: "crmCustomerPurchasedItemName", header: "Tên hàng hóa đã mua", width: 300 },
+    { field: "crmCustomerEmail", header: "Email", width: 200 },
+    { field: "crmCustomerAddress", header: "Địa chỉ liên hệ", width: 280 }
 
 ];
 
@@ -105,7 +131,7 @@ const payload = reactive({
     search: "",
     sortBy: "",
     sortOrder: "",
-    totalRows: 1000,
+    totalRows: 0,
     selectedTypeCustomer: null
 });
 
@@ -182,6 +208,18 @@ function onPaginationUpdate(newPayload) {
     loadDataForAPI();
 }
 
+function handleSortChange({ field, sortOrder }) {
+    payload.sortBy = field || "";
+    payload.sortOrder = sortOrder || "";
+
+    // Reset về trang 1 khi sort
+    payload.page = 1;
+
+    // gọi API lại
+    loadDataForAPI();
+}
+
+
 // -----------------------------------
 // Mounted: load data 1 lần khi component khởi tạo
 // -----------------------------------
@@ -237,36 +275,63 @@ function deleteSelected() {
         .catch();
 }
 
+function changeTypeCustomer() {
+    const payloadBulkType = {
+        ids: ids.value, // ["3fa85f64-5717-4562-b3fc-2c963f66afa6", "44b71a89-795b-29c6-b892-08c864661f9c"]
+        value: selectedChangeTypeCustomer.value
+    };
+    CustomersAPI.bulkType(payloadBulkType)
+        .then(res => {
+            if (res.status === 200) { // API update trả về 200 OK
+                showToastSuccess("Sửa thành công");
+                reloadData();
+                loadDataForAPI();
+                selectedChangeTypeCustomer.value = 'VIP';
+            }
+        })
+        .catch();
+}
+
 function exportSelected(data) {
     console.log("Xuất Excel:", selectedFromChild.value);
 
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('DanhSachKhachHang');
 
-    // Tạo header
-    sheet.columns = cols.map(c => ({ header: c.header, key: c.field, width: c.width * 0.1 }));
+    // Tạo header (vẫn giữ header như cậu)
+    sheet.columns = cols.map(c => ({ header: c.header, key: c.field, width: Math.max(10, (c.width || 15) * 0.1) }));
 
     // In đậm header
     sheet.getRow(1).font = { bold: true };
 
-    // Thêm dữ liệu
+    // Thêm dữ liệu — gán từng cell, ép về string và tiền tố bằng dấu nháy đơn để Excel bắt buộc dạng text
     selectedFromChild.value.forEach(item => {
         const rowData = {};
         cols.forEach(c => {
-            if (c.field === 'crmCustomerLastPurchaseDate') {
-                rowData[c.field] = formatDate(item[c.field]);
-            } else {
-                rowData[c.field] = item[c.field];
+            let value = item[c.field];
+
+            // Nếu FE đang trả về dạng { text: "xxx" }
+            if (value && typeof value === 'object') {
+                value = value.text ?? ''; // bóc text
             }
+
+            // Ép tất cả về string
+            rowData[c.field] = (value ?? '').toString();
         });
+
         sheet.addRow(rowData);
     });
+
+
+    // Tùy chọn: auto filter
+    sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: cols.length } };
+
     const fileName = "DanhSachKhachHang_" + Date.now() + ".xlsx";
-    // Xuất file
     workbook.xlsx.writeBuffer().then(buffer => {
         saveAs(new Blob([buffer], { type: 'application/octet-stream' }), fileName);
     });
 }
+
 
 // Modal xác nhận xóa
 const isModalOpen = ref(false);
@@ -283,6 +348,77 @@ const handleOk = () => {
 const handleCancel = () => {
     isModalOpen.value = false; // đóng modal
 };
+
+// Modal xác nhận sửa loại khách hàng
+const isModalOpenChangeType = ref(false);
+
+const showModalChangeType = () => {
+    isModalOpenChangeType.value = true;
+};
+
+const handleOkChangeType = () => {
+    changeTypeCustomer();
+    isModalOpenChangeType.value = false; // đóng modal
+};
+
+const handleCancelChangeType = () => {
+    isModalOpenChangeType.value = false; // đóng modal
+};
+
+// Modal xác Excel Import khách hàng
+const isModalOpenExcelImport = ref(false);
+
+const showModalExcelImport = () => {
+    isModalOpenExcelImport.value = true;
+};
+
+const handleOkExcelImport = async () => {
+    if (!fileList.value.length) {
+        alert("Vui lòng chọn file .xlsx!");
+        return;
+    }
+
+    const file = fileList.value[0].originFileObj;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+
+        CustomersAPI.excelImport(formData)
+        showToastSuccess("Nhập thành công!");
+        isModalOpen.value = false;
+        fileList.value = [];
+    } catch (err) {
+        console.error(err);
+        showToastError("Lỗi nhập file!");
+    }
+    isModalOpenExcelImport.value = false; // đóng modal
+};
+
+const handleCancelExcelImport = () => {
+    isModalOpenExcelImport.value = false; // đóng modal
+};
+
+const fileList = ref([]);
+
+const beforeUpload = (file) => {
+    const isXlsx = file.type ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+    if (!isXlsx) {
+        showToastError("Chỉ được phép nhập file .xlsx");
+        return Upload.LIST_IGNORE; // Ant Design Vue 3
+    }
+
+    return false; // Chặn auto upload
+};
+
+const handleChange = (info) => {
+    // Giữ chỉ 1 file — luôn lấy file cuối cùng
+    fileList.value = info.fileList.slice(-1);
+};
+
 </script>
 
 <style scoped>
