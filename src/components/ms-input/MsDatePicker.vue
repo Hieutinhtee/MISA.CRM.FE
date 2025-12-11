@@ -1,37 +1,57 @@
 <template>
-   <a-space>
-      <a-date-picker v-model="model" class="d-block" :format="dateFormatList" :placeholder="placeholder || label" />
-   </a-space>
+    <a-space>
+        <a-date-picker
+            v-model:value="model"
+            class="d-block"
+            :format="dateFormatList"
+            :placeholder="placeholder || label"
+        />
+    </a-space>
 </template>
 
-
 <script setup>
-import { defineModel } from 'vue';
+// Imports & Init
+import { defineModel } from 'vue'
 
-const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY'];
+//#region Props & Models
 const props = defineProps({
-   label: String,
-   placeholder: String
-});
+    /** Label hiển thị nếu placeholder không được cung cấp */
+    label: String,
+    /** Placeholder của Date Picker */
+    placeholder: String,
+})
 
-const model = defineModel()
+// Model binding cho v-model
+// Lưu ý: v-model của Ant Design DatePicker thường là Dayjs object,
+// nhưng nếu muốn tự động chuyển đổi sang String theo format, cần xử lý thêm ở component cha
+const model = defineModel('value')
+//#endregion
+
+//#region State Data
+/**
+ * Danh sách các định dạng ngày tháng được chấp nhận.
+ */
+const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY']
+//#endregion
+
+// Không có logic phức tạp trong component này, chỉ đơn thuần là wrapper.
 </script>
 
-<style>
-.ant-space {
-   height: 32px;
-   flex: 1 1 550px;
-   min-width: 0px;
-   transition: all 0.2s;
+<style scoped>
+/* Scoped styles cho Ant Design DatePicker (Picker) */
 
+.ant-space {
+    height: 32px;
+    flex: 1 1 550px;
+    min-width: 0px;
+    transition: all 0.2s;
 }
 
 .ant-space-item {
-
-   width: 100%;
+    width: 100%;
 }
 
 .ant-picker {
-   border-radius: 4px !important;
+    border-radius: 4px !important;
 }
 </style>

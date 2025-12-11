@@ -1,407 +1,503 @@
 <template>
-   <div class="table-content d-flex flex1 flex-column">
-      <DataTable :value="rows" scrollable scrollHeight="100%" resizableColumns columnResizeMode="expand" lazy
-         :loading="props.loading" removableSort @row-click="handleRowClick" sortMode="single" class="prime-table flex1"
-         dataKey="crmCustomerId" selectionMode="checkbox" v-model:selection="selectedProducts" :customSort="true">
-         <Column selectionMode="multiple" :frozen="true"></Column>
-         <Column v-for="col in columns" :key="col.field" :field="col.field" :sortable="true"
-            @click="onSortClick(col.field)" :style="col.width ? {
-               minWidth: col.width + 'px',
-               maxWidth: col.width + 'px'
-            } : null">
-            <template #header>
-               <div class="sortable-header" @click="onSortClick(col.field)" style="cursor: pointer;">
-                  {{ col.header }}
-                  <span v-if="sortState.field === col.field" style="margin-left: 4px;">
-                     {{ sortState.order === 'ASC' ? '' : sortState.order === 'DESC' ? '' : '' }}
-                  </span>
-               </div>
-            </template>
-            <template #body="slotProps">
-               <div class="ellipsis" :title="slotProps.data[col.field]">
-                  <div v-if="!slotProps.data[col.field]">-</div>
+    <div class="table-content d-flex flex1 flex-column">
+        <DataTable
+            :value="props.rows"
+            scrollable
+            scrollHeight="100%"
+            resizableColumns
+            columnResizeMode="expand"
+            lazy
+            :loading="props.loading"
+            removableSort
+            @row-click="handleRowClick"
+            sortMode="single"
+            class="prime-table flex1"
+            dataKey="crmCustomerId"
+            selectionMode="checkbox"
+            v-model:selection="selectedProducts"
+            :customSort="true"
+        >
+            <Column selectionMode="multiple" :frozen="true"></Column>
+            <Column
+                v-for="col in columns"
+                :key="col.field"
+                :field="col.field"
+                :sortable="true"
+                @click="onSortClick(col.field)"
+                :style="
+                    col.width
+                        ? {
+                              minWidth: col.width + 'px',
+                              maxWidth: col.width + 'px',
+                          }
+                        : null
+                "
+            >
+                <template #header>
+                    <div
+                        class="sortable-header"
+                        @click="onSortClick(col.field)"
+                        style="cursor: pointer"
+                    >
+                        {{ col.header }}
+                        <span v-if="sortState.field === col.field" style="margin-left: 4px"> </span>
+                    </div>
+                </template>
+                <template #body="slotProps">
+                    <div class="ellipsis" :title="slotProps.data[col.field]">
+                        <div v-if="!slotProps.data[col.field]">-</div>
 
-                  <div v-else-if="col.field === 'crmCustomerPhoneNumber'" class="d-flex">
-                     <i class="icon-phone"></i>
-                     <MsTextColor>{{ handleFormat(slotProps.data[col.field], col.type) }}
-                     </MsTextColor>
-                  </div>
+                        <div v-else-if="col.field === 'crmCustomerPhoneNumber'" class="d-flex">
+                            <i class="icon-phone"></i>
+                            <MsTextColor
+                                >{{ handleFormat(slotProps.data[col.field], col.type) }}
+                            </MsTextColor>
+                        </div>
 
-                  <div v-else-if="col.field === 'crmCustomerCode' || col.field === 'crmCustomerName'">
-                     <MsTextColor>{{ handleFormat(slotProps.data[col.field], col.type) }}
-                     </MsTextColor>
-                  </div>
+                        <div
+                            v-else-if="
+                                col.field === 'crmCustomerCode' || col.field === 'crmCustomerName'
+                            "
+                        >
+                            <MsTextColor
+                                >{{ handleFormat(slotProps.data[col.field], col.type) }}
+                            </MsTextColor>
+                        </div>
 
-                  <div v-else>
-                     {{ handleFormat(slotProps.data[col.field], col.type) }}
-                  </div>
-               </div>
-            </template>
-         </Column>
+                        <div v-else>
+                            {{ handleFormat(slotProps.data[col.field], col.type) }}
+                        </div>
+                    </div>
+                </template>
+            </Column>
+        </DataTable>
 
-      </DataTable>
-      <div class="footer d-flex justify-content-between align-content-center">
-         <div class="footer-start d-flex align-content-center">
-            <div class="icon-sort-setting"></div>
-            <div class="total-row">
-               <div class="total-row-title">Tổng số:</div>
-               <strong class="total-row-value">{{ localData.totalRows }}</strong>
+        <div class="footer d-flex justify-content-between align-content-center">
+            <div class="footer-start d-flex align-content-center">
+                <div class="icon-sort-setting"></div>
+                <div class="total-row">
+                    <div class="total-row-title">Tổng số:</div>
+                    <strong class="total-row-value">{{ localData.totalRows }}</strong>
+                </div>
+                <div class="total-debt">
+                    <div class="total-debt-title">Công nợ</div>
+                    <strong class="total-debt-value">0</strong>
+                </div>
             </div>
-            <div class="total-debt">
-               <div class="total-debt-title">Công nợ</div>
-               <strong class="total-debt-value">0</strong>
+
+            <div class="footer-end d-flex align-content-center">
+                <a-select
+                    style="width: 180px"
+                    v-model:value="localData.pageSize"
+                    @change="onChangePageSize"
+                    lineHeight="32px"
+                >
+                    <template #suffixIcon>
+                        <div class="icon-down"></div>
+                    </template>
+                    <a-select-option :value="10">10 Bản ghi trên trang</a-select-option>
+                    <a-select-option :value="20">20 Bản ghi trên trang</a-select-option>
+                    <a-select-option :value="50">50 Bản ghi trên trang</a-select-option>
+                    <a-select-option :value="100">100 Bản ghi trên trang</a-select-option>
+                </a-select>
+
+                <div class="pagination d-flex">
+                    <div class="icon-pagination-first pointer" @click="changePage('first')"></div>
+                    <div class="icon-left pointer" @click="changePage('prev')"></div>
+                    <div>
+                        <strong>{{ localData.recordStart }}</strong>
+                    </div>
+                    <div>đến</div>
+                    <div>
+                        <strong>{{ localData.recordEnd }}</strong>
+                    </div>
+                    <div class="icon-right pointer" @click="changePage('next')"></div>
+                    <div class="icon-pagination-end pointer" @click="changePage('last')"></div>
+                </div>
             </div>
-         </div>
-
-         <div class="footer-end d-flex align-content-center">
-            <a-select style="width: 180px" v-model:value="localData.pageSize" @change="onChangePageSize"
-               lineHeight="32px">
-               <template #suffixIcon>
-                  <div class="icon-down"></div>
-               </template>
-               <a-select-option :value="10">10 Bản ghi trên trang</a-select-option>
-               <a-select-option :value="20">20 Bản ghi trên trang</a-select-option>
-               <a-select-option :value="50">50 Bản ghi trên trang</a-select-option>
-               <a-select-option :value="100">100 Bản ghi trên trang</a-select-option>
-            </a-select>
-
-            <div class="pagination d-flex">
-               <div class="icon-pagination-first" @click="changePage('first')"></div>
-               <div class="icon-left" @click="changePage('prev')"></div>
-               <div><strong>{{ localData.recordStart }}</strong></div>
-               <div>đến</div>
-               <div><strong>{{ localData.recordEnd }}</strong></div>
-               <div class="icon-right" @click="changePage('next')"></div>
-               <div class="icon-pagination-end" @click="changePage('last')"></div>
-            </div>
-         </div>
-      </div>
-   </div>
-
+        </div>
+    </div>
 </template>
 
 <script setup>
-import { defineProps, ref, watch, reactive } from "vue";
-import 'primevue/resources/themes/saga-blue/theme.css';
-import 'primevue/resources/primevue.min.css';
-import 'primeicons/primeicons.css';
+// Imports
+import { ref, watch, reactive, defineModel } from 'vue'
+import 'primevue/resources/themes/saga-blue/theme.css'
+import 'primevue/resources/primevue.min.css'
+import 'primeicons/primeicons.css'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import MsTextColor from '@/components/ms-button/MsTextColor.vue'
+import { formatNumber, formatDate, formatText } from '@/utils/formatter.js'
 
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
+// Props, Emits, Models
+const emit = defineEmits([
+    'update:pagination',
+    'row-click',
+    'update:selectedProducts',
+    'update:sort-change',
+])
 
-import MsTextColor from '@/components/ms-button/MsTextColor.vue';
-import { formatNumber, formatDate, formatText } from '@/utils/formatter.js';
-
-const pageSize = ref(100);
-const emit = defineEmits(["update:pagination", "row-click", "update:selectedProducts", "update:sort-change"]);
-
-const sortState = ref({
-   field: null,       // cột đang sort
-   order: null        // 'ASC' | 'DESC' | null
-});
-
-//Khai báo props
 const props = defineProps({
-   /** danh sách cột */
-   columns: {
-      type: Array,
-      required: true,
-      validator: (value) => {
-         return value.every(col => {
-            const validTypes = ['text', 'number', 'date', 'custom'];
-            return col.field &&
-               col.header &&
-               validTypes.includes(col.type || 'text');
-         });
-      }
-   },
+    /** danh sách cột */
+    columns: {
+        type: Array,
+        required: true,
+        validator: (value) => {
+            return value.every((col) => {
+                const validTypes = ['text', 'number', 'date', 'custom']
+                return col.field && col.header && validTypes.includes(col.type || 'text')
+            })
+        },
+    },
 
-   /** danh sách dữ liệu */
-   rows: {
-      type: Array,
-      required: true
-   },
+    /** danh sách dữ liệu */
+    rows: {
+        type: Array,
+        required: true,
+    },
 
-   //prop cho paging, sort
-   paginationData: {
-      type: Object,
-      required: true
-   },
-   loading: {
-      type: Boolean
-   }
-});
+    /** prop cho paging, sort */
+    paginationData: {
+        type: Object,
+        required: true,
+    },
 
+    /** trạng thái loading của bảng */
+    loading: {
+        type: Boolean,
+    },
+})
 
-//----------------------------Xử lý pagination --------------------------------------------------------------------------------------
+// Model cho dữ liệu được chọn (checkbox)
+const selectedProducts = defineModel('selection', { default: [] })
 
+// State Data
+/**
+ * Trạng thái sắp xếp hiện tại của bảng
+ * @property {string|null} field - Tên trường đang được sắp xếp.
+ * @property {('ASC'|'DESC'|null)} order - Thứ tự sắp xếp.
+ */
+const sortState = ref({
+    field: null, // cột đang sort
+    order: null, // 'ASC' | 'DESC' | null
+})
 
-// tạo copy local để con tự quản lý
+/**
+ * Copy local của dữ liệu phân trang để component con tự quản lý
+ * @property {number} page - Trang hiện tại.
+ * @property {number} pageSize - Số bản ghi trên mỗi trang.
+ * @property {number} totalRows - Tổng số bản ghi.
+ * @property {number} recordStart - Số thứ tự bản ghi đầu trang.
+ * @property {number} recordEnd - Số thứ tự bản ghi cuối trang.
+ */
 const localData = reactive({
-   ...props.paginationData,
-   recordStart: 1, // số thứ tự bản ghi đầu trang
-   recordEnd: 1    // số thứ tự bản ghi cuối trang
-});
+    ...props.paginationData,
+    recordStart: 1,
+    recordEnd: 1,
+})
 
-// watch khi cha update object → cập nhật localData
+// Watcher
+/**
+ * Theo dõi sự thay đổi của props.paginationData từ component cha
+ * và cập nhật localData, đồng thời tính lại range hiển thị.
+ */
 watch(
-   () => props.paginationData,
-   (newVal) => {
-      Object.assign(localData, newVal);
-      computeRecordRange(localData.page);
-   },
-   { deep: true }
-);
+    () => props.paginationData,
+    (newVal) => {
+        Object.assign(localData, newVal)
+        computeRecordRange(localData.page)
+    },
+    { deep: true },
+)
 
-// Hàm tính lại recordStart/recordEnd dựa trên pageSize và page (số trang)
+//#region Methods - Pagination
+
+/**
+ * Hàm tính lại recordStart (bản ghi đầu) và recordEnd (bản ghi cuối)
+ * dựa trên pageSize và page (số trang).
+ * @param {number} pageNumber - Số trang hiện tại.
+ * createdby: TMHieu - 09.12.2025
+ */
 function computeRecordRange(pageNumber) {
-   localData.recordStart = (pageNumber - 1) * localData.pageSize + 1;
-   localData.recordEnd = Math.min(localData.recordStart + localData.pageSize - 1, localData.totalRows);
+    if (localData.totalRows === 0) {
+        localData.recordStart = 0
+        localData.recordEnd = 0
+        return
+    }
+    localData.recordStart = (pageNumber - 1) * localData.pageSize + 1
+    localData.recordEnd = Math.min(
+        localData.recordStart + localData.pageSize - 1,
+        localData.totalRows,
+    )
 }
 
-// khi đổi pageSize → reset về trang 1
+/**
+ * Xử lý khi đổi kích thước trang (pageSize) → reset về trang 1
+ * @param {number} value - PageSize mới.
+ * createdby: TMHieu - 09.12.2025
+ */
 function onChangePageSize(value) {
-   localData.pageSize = value;
-   localData.page = 1;                   // reset về trang 1
-   computeRecordRange(localData.page);
-   emit("update:pagination", { ...localData });
+    localData.pageSize = value
+    localData.page = 1 // reset về trang 1
+    computeRecordRange(localData.page)
+    // Emit sự kiện lên cha để cha gọi API lấy dữ liệu mới
+    emit('update:pagination', { ...localData })
 }
 
-// khi nhấn các icon
+/**
+ * Thay đổi trang hiện tại khi nhấn các nút điều hướng (first, prev, next, last).
+ * @param {('first'|'prev'|'next'|'last')} action - Hành động chuyển trang.
+ * createdby: TMHieu - 09.12.2025
+ */
 function changePage(action) {
-   const totalPages = Math.ceil(localData.totalRows / localData.pageSize);
-   let currentPage = localData.page;
+    const totalPages = Math.ceil(localData.totalRows / localData.pageSize)
+    let currentPage = localData.page || 1
 
-   switch (action) {
-      case "first": currentPage = 1; break;
-      case "prev": currentPage = Math.max(currentPage - 1, 1); break;
-      case "next": currentPage = Math.min(currentPage + 1, totalPages); break;
-      case "last": currentPage = totalPages; break;
-   }
+    switch (action) {
+        case 'first':
+            currentPage = 1
+            break
+        case 'prev':
+            currentPage = Math.max(currentPage - 1, 1)
+            break
+        case 'next':
+            currentPage = Math.min(currentPage + 1, totalPages)
+            break
+        case 'last':
+            currentPage = totalPages
+            break
+    }
 
-   localData.page = currentPage;
-   computeRecordRange(currentPage);
-   emit("update:pagination", { ...localData });
+    // Ngăn chặn gọi API nếu không có thay đổi trang (hoặc trang cuối/đầu)
+    if (localData.page === currentPage) return
+
+    localData.page = currentPage
+    computeRecordRange(currentPage)
+    // Emit sự kiện lên cha để cha gọi API lấy dữ liệu mới
+    emit('update:pagination', { ...localData })
 }
 
-// khởi tạo range khi load
-computeRecordRange(localData.page || 1);
+// Khởi tạo range khi component mount lần đầu
+computeRecordRange(localData.page || 1)
 
+//#endregion
 
-// ---------------Xử lý checkbox-------------------------------------------------------------------------------------------------------------------------------
-const selectedProducts = ref([]);
+//#region Methods - Sorting
 
-watch(selectedProducts, (newVal) => {
-   emit("update:selectedProducts", newVal);
-});
-
-//---------------------Xử lý sort cột-----------------------------------------------------------------
-
-function onSort(e) {
-   console.log("Vừa sort");
-}
-
+/**
+ * Xử lý sự kiện click vào header cột để sắp xếp
+ * @param {string} clickedField - Tên field (cột) được click.
+ * createdby: TMHieu - 09.12.2025
+ */
 function onSortClick(clickedField) {
-   if (sortState.value.field === clickedField) {
-      // Cột hiện tại, toggle thứ tự: null → ASC → DESC → null
-      if (sortState.value.order === null) {
-         sortState.value.order = "ASC";
-      } else if (sortState.value.order === "ASC") {
-         sortState.value.order = "DESC";
-      } else {
-         sortState.value.order = null;
-      }
-   } else {
-      // Cột khác, reset cột khác, mặc định tăng dần
-      sortState.value.field = clickedField;
-      sortState.value.order = "ASC";
-   }
+    if (sortState.value.field === clickedField) {
+        // Cột hiện tại, toggle thứ tự: null → ASC → DESC → null
+        if (sortState.value.order === null) {
+            sortState.value.order = 'ASC'
+        } else if (sortState.value.order === 'ASC') {
+            sortState.value.order = 'DESC'
+        } else {
+            sortState.value.order = null
+        }
+    } else {
+        // Cột khác, reset cột khác, mặc định tăng dần
+        sortState.value.field = clickedField
+        sortState.value.order = 'ASC'
+    }
 
-   // Emit lên cha
-   emit("update:sort-change", {
-      field: sortState.value.field,
-      sortOrder: sortState.value.order
-   });
+    // Emit lên cha
+    emit('update:sort-change', {
+        field: sortState.value.field,
+        sortOrder: sortState.value.order,
+    })
 }
 
-//---------------------Row Click để edit-------------------------------------------------------
+//#endregion
 
+//#region Methods - Row & Selection
+
+/**
+ * Xử lý sự kiện click vào một hàng (row) trên bảng
+ * @param {Object} event - Sự kiện click từ PrimeVue DataTable.
+ * createdby: TMHieu - 09.12.2025
+ */
 function handleRowClick(event) {
-   emit('row-click', event.data)  // event.data là row được click
+    emit('row-click', event.data) // event.data là row được click
 }
 
+//#endregion
 
-//---------------Emit các bản ghi được checkbox lên cha------------------------------------------
-const onSelectionChange = (e) => {
-   selectedProducts.value = e.value;
-   emit("update:selectedProducts", selectedProducts.value);
-};
+//#region Methods - Formatting
 
-//---------------Format dữ liệu như số, date, string -------------------------------------------------------------------------------------------------------------
+/**
+ * Định dạng dữ liệu dựa trên loại (type) cột.
+ * @param {*} value - Giá trị cần định dạng.
+ * @param {('text'|'number'|'date'|'custom')} type - Loại định dạng.
+ * @returns {string} Giá trị đã được định dạng.
+ * createdby: TMHieu - 09.12.2025
+ */
 const handleFormat = (value, type) => {
-   switch (type) {
-      case 'number':
-         return formatNumber(value);
-      case 'date':
-         return formatDate(value);
-      case 'text':
-         return formatText(value);
-      default:
-         return formatText(value);
-   }
-};
+    switch (type) {
+        case 'number':
+            return formatNumber(value)
+        case 'date':
+            return formatDate(value)
+        case 'text':
+        default:
+            return formatText(value)
+    }
+}
+
+//#endregion
 </script>
 
 <style>
+/* Toolbar */
 .prime-table .p-column-resizer {
-   width: 16px;
-   /* dễ kéo hơn mặc định */
+    width: 16px;
+    /* dễ kéo hơn mặc định */
+}
+
+/* Header */
+.p-datatable .p-column-header-content {
+    box-sizing: border-box;
+    padding: 0px 10px 0px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .sortable-header {
-   width: 100%;
-   padding: 12px 0 12px 0;
+    width: 100%;
+    padding: 12px 0 12px 0;
 }
 
-.p-datatable .p-column-header-content {
-   padding: 0 10px 0 14px !important;
-}
-
+/* Body */
 .prime-table {
-   flex: 1 1 auto !important;
-   display: flex;
+    flex: 1 1 auto !important;
+    display: flex;
 }
 
 .p-datatable-wrapper {
-   flex: 1;
-}
-
-
-
-/* Footer */
-.footer {
-   border-top: 1px solid #d3d7de;
-   padding: 12px 16px;
-}
-
-.total-row {
-   margin-left: 20px;
-}
-
-.total-debt {
-   margin-left: 32px;
-}
-
-.total-row-title,
-.total-debt-title {
-   font-weight: 400;
-   color: #586074;
-   margin-bottom: 3px;
-   font-size: 13px;
-}
-
-.p-datatable .p-column-header-content {
-   box-sizing: border-box;
-   padding: 10px 10px 10px 14px;
+    flex: 1;
 }
 
 .p-datatable tbody td {
-   box-sizing: border-box;
-   padding: 10px 10px 10px 14px;
-   text-overflow: ellipsis !important;
-   overflow: hidden !important;
-   white-space: nowrap !important;
-   min-width: 0;
+    box-sizing: border-box;
+    padding: 10px 10px 10px 14px;
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    min-width: 0;
 }
 
 .ellipsis {
-   display: block;
-   width: 100%;
-   overflow: hidden;
-   white-space: nowrap;
-   text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.p-checkbox .p-checkbox-box {
-   width: 16px !important;
-   height: 16px !important;
-   margin: 3px 0 3px 0;
-   border: 1px solid #7c869c;
-   outline: none;
-   border-radius: 4px;
+.p-datatable .p-datatable-tbody > tr:hover {
+    background: #f0f2f4;
+    cursor: pointer;
 }
 
-.p-datatable .p-datatable-tbody>tr:hover {
-   background: #f0f2f4;
-   cursor: pointer;
-}
-
-.p-datatable .p-column-header-content {
-   display: flex;
-   justify-content: space-between;
-   align-items: center;
-}
-
+/* Sort Icon Styling (Custom behavior) */
 .p-datatable .p-sortable-column .p-sortable-column-icon {
-   opacity: 0;
-   transition: opacity 0.2s;
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
 /* Hiển thị khi hover header */
 .p-datatable .p-sortable-column:hover .p-sortable-column-icon {
-   opacity: 1;
+    opacity: 1;
 }
 
-/* Chặn PrimeVue sort data */
+/* Chặn PrimeVue sort data (Chỉ dùng click event) */
 .p-datatable .p-sortable-column {
-   pointer-events: auto !important;
+    pointer-events: auto !important;
 }
 
 .p-datatable .p-sortable-column-icon {
-   pointer-events: none !important;
+    pointer-events: none !important;
+}
+
+/* Checkbox */
+.p-checkbox .p-checkbox-box {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 3px 0 3px 0;
+    border: 1px solid #7c869c;
+    outline: none;
+    border-radius: 4px;
+}
+
+/* Footer */
+.footer {
+    border-top: 1px solid #d3d7de;
+    padding: 12px 16px;
+}
+
+.total-row {
+    margin-left: 20px;
+}
+
+.total-debt {
+    margin-left: 32px;
+}
+
+.total-row-title,
+.total-debt-title {
+    font-weight: 400;
+    color: #586074;
+    margin-bottom: 3px;
+    font-size: 13px;
 }
 
 .pagination {
-   margin-left: 20px;
-   gap: 10px;
+    margin-left: 20px;
+    gap: 10px;
 }
 
-/* Ẩn arrow, track mặc định và các phần không cần thiết */
-::-webkit-scrollbar-button {
-   display: none;
-   /* ẩn các mũi tên ở đầu/cuối scrollbar */
-}
-
-/* Tùy chỉnh scrollbar */
-::-webkit-scrollbar {
-   margin-top: 100px;
-   width: 8px;
-   /* chiều rộng scrollbar */
-   height: 8px;
-   /* chiều cao scrollbar (nếu scroll ngang) */
-}
-
-::-webkit-scrollbar-thumb {
-   background-color: #c5c9d3;
-   /* màu thanh scroll */
-   border-radius: 4px;
-}
-
-::-webkit-scrollbar-track {
-   background-color: #f1f1f1;
-   border-radius: 4px;
-   /* màu nền track */
-}
-
+/* Loading Overlay Custom */
 .p-datatable .p-datatable-loading-overlay {
-   background: rgba(255, 255, 255, 0.571) !important;
+    background: rgba(255, 255, 255, 0.571) !important;
 }
 
 .p-datatable .p-datatable-loading-icon {
-   width: 50px !important;
-   height: 50px !important;
-   /* tăng kích thước */
-   color: var(--primary-color) !important;
-   /* đổi màu */
+    width: 50px !important;
+    height: 50px !important;
+    /* tăng kích thước */
+    color: var(--primary-color) !important;
+    /* đổi màu */
+}
+
+/* Scrollbar Custom */
+::-webkit-scrollbar-button {
+    display: none;
+    /* ẩn các mũi tên ở đầu/cuối scrollbar */
+}
+
+::-webkit-scrollbar {
+    margin-top: 100px;
+    width: 8px;
+    /* chiều rộng scrollbar */
+    height: 8px;
+    /* chiều cao scrollbar (nếu scroll ngang) */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #c5c9d3;
+    /* màu thanh scroll */
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 4px;
+    /* màu nền track */
 }
 </style>

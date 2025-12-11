@@ -1,124 +1,126 @@
 .d-block {
-  display: block;
+    display: block;
 }
 
 /* flex */
 .d-flex {
-  display: flex;
+    display: flex;
 }
 
 .flex-column {
-  flex-direction: column;
+    flex-direction: column;
 }
 
 .flex-row {
-  flex-direction: row;
+    flex-direction: row;
 }
 
 .flex-e {
-  justify-content: flex-end;
+    justify-content: flex-end;
 }
 
 .flex-s {
-  justify-content: flex-start;
+    justify-content: flex-start;
 }
 
 .flex1 {
-  min-width: 0;
-  min-height: 0;
-  flex: 1;
+    min-width: 0;
+    min-height: 0;
+    flex: 1;
 }
-
 
 /* align */
 .align-content-center {
-  align-items: center;
+    align-items: center;
 }
 
 .align-content-stretch {
-  align-items: baseline;
+    align-items: baseline;
 }
 
 .align-content-fe {
-  align-content: flex-end;
+    align-content: flex-end;
 }
 
 .justify-content-center {
-  justify-content: center;
+    justify-content: center;
 }
 
 .justify-content-between {
-  justify-content: space-between;
+    justify-content: space-between;
 }
-
 
 /* margin */
 .m-l-8 {
-  margin-left: 8px;
+    margin-left: 8px;
 }
 
 .m-r-8 {
-  margin-right: 8px;
+    margin-right: 8px;
 }
 
 .m-l-12 {
-  margin-left: 12px;
+    margin-left: 12px;
 }
 
 .m-b-12 {
-  margin-bottom: 12px;
+    margin-bottom: 12px;
 }
 
 .m-r-19 {
-  margin-right: 19px;
+    margin-right: 19px;
 }
 
 .m-r-24 {
-  margin-right: 21px;
+    margin-right: 21px;
 }
 
 .text-center {
-  width: 100%;
-  text-align: center;
+    width: 100%;
+    text-align: center;
 }
 
 .relative {
-  position: relative;
+    position: relative;
 }
 
 .absolute {
-  position: absolute;
+    position: absolute;
 }
 
 .title {
-  font-size: 18px;
-  font-weight: 700;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 label {
-  line-height: 24px;
+    line-height: 24px;
 }
 
 .info-content .d-flex {
-  margin: 4px 0;
+    margin: 4px 0;
 }
 
 .gap16 {
-  gap: 16px;
+    gap: 16px;
 }
 
 .gap12 {
-  gap: 12px;
+    gap: 12px;
 }
 
 .gap80 {
-  gap: 80px;
+    gap: 80px;
 }
 
 .hidden {
-  display: none;
+    display: none;
 }
 
 .w-100 {
-  width: 100%;
+    width: 100%;
+}
+
+.pointer {
+    cursor: pointer;
 }

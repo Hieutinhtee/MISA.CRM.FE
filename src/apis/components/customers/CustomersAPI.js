@@ -48,7 +48,19 @@ class CustomersAPI extends BaseAPI {
       return api.put(`${this.controller}/soft-delete-many`, payload);
    }
 
+   async uploadToImgBB(file) {
+      const apiKey = "a5d6ac441fde8242e0851023e43f55b6";
+      const formData = new FormData();
+      formData.append("image", file);
 
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+         method: "POST",
+         body: formData,
+      });
+
+      const data = await res.json();
+      return data;
+   }
 }
 
 export default new CustomersAPI();
