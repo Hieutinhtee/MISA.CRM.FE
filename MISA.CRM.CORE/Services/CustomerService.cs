@@ -127,11 +127,7 @@ namespace MISA.CRM.CORE.Services
             }
 
             if (!records.Any())
-                return new ImportResult
-                {
-                    Success = 0,
-                    Failed = 0
-                };
+                throw new NotFoundException("Lỗi đọc file Csv khi map các cột", "Lỗi đọc file, vui lòng thử lại sau");// không có dữ liệu
 
             // --- Bắt đầu gán Guid tự động ---
             var guidProperty = typeof(Customer).GetProperties()

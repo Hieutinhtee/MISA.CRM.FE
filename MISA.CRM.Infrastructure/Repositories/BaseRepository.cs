@@ -35,7 +35,7 @@ namespace MISA.CRM.Infrastructure.Repositories
         //Tên cột đánh dấu xóa mềm
         protected readonly string _softKeyDelete;
 
-        //Tên cột mã tự sinh dùng để sắp xếp mặc định
+        //Tên cột mã tự sinh tăng dần dùng để sắp xếp mặc định
         protected readonly string _defaultSortFiled;
 
         /// <summary>
@@ -140,20 +140,6 @@ namespace MISA.CRM.Infrastructure.Repositories
             var sql = $"SELECT * FROM {_tableName} WHERE {_softKeyDelete} = 0 ORDER BY RIGHT({_defaultSortFiled}, 6) * 1 DESC;";
             var res = await conn.QueryAsync<T>(sql);
             return res.ToList();
-        }
-
-        /// <summary>
-        /// Lấy entity theo Id .
-        /// Created by: TMHieu (05/12/2025)
-        /// </summary>
-        /// <param name="id">Id của entity (Guid).</param>
-        /// <returns>Entity T nếu tồn tại, null nếu không.</returns>
-        public virtual async Task<T?> GetByIdAsync(Guid id)
-        {
-            using var conn = Connection;
-            // SQL lấy record đầu tiên khớp Id và chưa xóa mềm
-            var sql = $"SELECT * FROM {_tableName} WHERE {_idColumn} = @Id AND {_softKeyDelete} = 0 LIMIT 1";
-            return await conn.QueryFirstOrDefaultAsync<T>(sql, new { Id = id });
         }
 
         /// <summary>
