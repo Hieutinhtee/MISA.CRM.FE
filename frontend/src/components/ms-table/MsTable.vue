@@ -13,29 +13,11 @@
             sortMode="single"
             class="prime-table flex1"
             dataKey="crmCustomerId"
+            selectionMode="checkbox"
+            v-model:selection="selectedProducts"
             :customSort="true"
         >
-            <Column :frozen="true">
-                <template #header>
-                    <div class="custom-header-checkbox">
-                        <input
-                            class="check-box-icon"
-                            type="checkbox"
-                            :checked="isCheck && isShow"
-                            :indeterminate="isCheck && !isShow"
-                            @change="onHeaderCheck"
-                        />
-                    </div>
-                </template>
-                <template #body="slotProps">
-                    <input
-                        class="check-box-icon"
-                        type="checkbox"
-                        :checked="isRowChecked(slotProps.data)"
-                        @change="toggleRow(slotProps.data)"
-                    />
-                </template>
-            </Column>
+            <Column selectionMode="multiple" :frozen="true"></Column>
             <Column
                 v-for="col in columns"
                 :key="col.field"
@@ -149,7 +131,12 @@ import MsTextColor from '@/components/ms-button/MsTextColor.vue'
 import { formatNumber, formatDate, formatText } from '@/utils/formatter.js'
 
 // Props, Emits, Models
-const emit = defineEmits(['update:pagination', 'row-click', 'update:sort-change'])
+const emit = defineEmits([
+    'update:pagination',
+    'row-click',
+    'update:selectedProducts',
+    'update:sort-change',
+])
 
 const props = defineProps({
     /** danh sách cột */
@@ -209,14 +196,6 @@ const localData = reactive({
     recordStart: 1,
     recordEnd: 1,
 })
-
-/**
- * Trạng thái của checkAll
- */
-const isCheck = ref(false) // người dùng đã bấm chọn tất cả
-const isShow = ref(false) // hiển thị của checkbox header
-const selected = ref([]) // chứa id được chọn (khi isCheck = false)
-const excluded = ref([]) // chứa id bị loại ra (khi isCheck = true)
 
 // Watcher
 /**
@@ -336,10 +315,10 @@ function onSortClick(clickedField) {
 
 //#endregion
 
-//#region Methods - Row & Selection, All checkbox
+//#region Methods - Row & Selection
 
 /**
- * Xử lý sự kiện click vào một hàng (row) trên bảng, emit data của dòng đó lên cha xử lý
+ * Xử lý sự kiện click vào một hàng (row) trên bảng
  * @param {Object} event - Sự kiện click từ PrimeVue DataTable.
  * createdby: TMHieu - 09.12.2025
  */
@@ -347,72 +326,6 @@ function handleRowClick(event) {
     emit('row-click', event.data) // event.data là row được click
 }
 
-/**
- * Xử lý sự kiện click vào allCheckbox trên bảng đổi state đánh dấu, trạng thái hiển thị
- * createdby: TMHieu - 12.12.2025
- */
-const onHeaderCheck = () => {
-    if (!isCheck.value) {
-        // Bật chọn tất cả
-        isCheck.value = true
-        isShow.value = true
-        selected.value = []
-        excluded.value = []
-    } else {
-        // Tắt chọn tất cả
-        isCheck.value = false
-        isShow.value = false
-        selected.value = []
-        excluded.value = []
-    }
-}
-
-/**
- * Dòng được chọn hay không
- * @param {Object} row - data của dòng được chọn
- * createdby: TMHieu - 12.12.2025
- */
-const isRowChecked = (row) => {
-    const id = row.crmCustomerId
-
-    if (isCheck.value) {
-        return !excluded.value.includes(id)
-    }
-    return selected.value.includes(id)
-}
-
-// Tick từng dòng
-const toggleRow = (row) => {
-    const id = row.crmCustomerId
-
-    // Nếu đang ở chế độ "chọn tất cả"
-    if (isCheck.value) {
-        const idx = excluded.value.indexOf(id)
-
-        if (idx >= 0) {
-            excluded.value.splice(idx, 1)
-        } else {
-            excluded.value.push(id)
-        }
-
-        // Nếu không còn dòng bị loại → header hiện tick đầy đủ
-        isShow.value = excluded.value.length === 0
-
-        return
-    }
-
-    // Trường hợp KHÔNG chọn tất cả
-    const i = selected.value.indexOf(id)
-    if (i >= 0) {
-        selected.value.splice(i, 1)
-    } else {
-        selected.value.push(id)
-    }
-
-    // Kiểm tra xem tất cả dòng trên trang có được chọn hết không
-    const allIdsThisPage = props.rows.map((r) => r.crmCustomerId)
-    isShow.value = allIdsThisPage.every((id) => selected.value.includes(id))
-}
 //#endregion
 
 //#region Methods - Formatting
