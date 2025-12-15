@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MISA.CRM.Infrastructure</name>
+    </assembly>
+    <members>
+        <member name="T:MISA.CRM.Infrastructure.Connection.MySqlConnectionFactory">
+            <summary>
+            Factory giúp khởi tạo đối tượng kết nối đến Database MySQL
+            <para/>Sử dụng trong tầng Infrastructure để cung cấp kết nối cho các Repository thực thi câu lệnh SQL
+            </summary>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="F:MISA.CRM.Infrastructure.Connection.MySqlConnectionFactory._connectionString">
+            <summary>
+            Chuỗi thông tin kết nối đến Database
+            </summary>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Connection.MySqlConnectionFactory.#ctor(System.String)">
+            <summary>
+            Hàm khởi tạo đối tượng Factory với chuỗi kết nối cụ thể
+            </summary>
+            <param name="connectionString">Chuỗi kết nối đến database (Connection String)</param>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Connection.MySqlConnectionFactory.CreateConnection">
+            <summary>
+            Khởi tạo và trả về một đối tượng kết nối Database
+            <para/>Sử dụng khi cần mở một phiên kết nối mới để thao tác dữ liệu
+            </summary>
+            <returns>Đối tượng kết nối (IDbConnection) đã được khởi tạo</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="T:MISA.CRM.Infrastructure.Repositories.BaseRepository`1">
+            <summary>
+            Repository base cho tất cả các entity.
+            dùng Dapper làm micro-ORM.
+            Tự động lấy tên bảng từ [TableName] hoặc fallback sang quy tắc crm_ + snake_case.
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <typeparam name="T">Entity kế thừa từ class, phải có ít nhất 1 property đánh dấu [Key] nếu muốn Insert trả về Id</typeparam>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.#ctor(MISA.CRM.Infrastructure.Connection.MySqlConnectionFactory)">
+            <summary>
+            Constructor cho BaseRepository.
+            Khởi tạo factory kết nối và xác định tên bảng/entity.
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <param name="factory">Factory tạo MySqlConnection (bắt buộc, không được null)</param>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.ToSnakeCase(System.String)">
+            <summary>
+            Phương thức helper để chuyển tên class sang snake_case (ví dụ: Customer → customer).
+            Sử dụng để fallback khi không có [TableName].
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <param name="s">Chuỗi tên class cần chuyển đổi.</param>
+            <returns>Tên snake_case tương ứng.</returns>
+        </member>
+        <member name="P:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.Connection">
+            <summary>
+            Property để lấy connection từ factory.
+            Mỗi lần gọi sẽ tạo mới connection để tránh reuse sai.
+            Created by: TMHieu (05/12/2025)
+            </summary>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.GetSortableFields">
+            <summary>
+            Phương thức abstract để lấy danh sách các trường hợp lệ cho sort (whitelist để tránh SQL injection).
+            Phải override ở repository con.
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <returns>HashSet các tên cột hợp lệ.</returns>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.GetSearchFields">
+            <summary>
+            Phương thức abstract để lấy danh sách các trường hợp lệ cho sort (whitelist để tránh SQL injection).
+            Phải override ở repository con.
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <returns>HashSet các tên cột hợp lệ.</returns>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.GetAllAsync">
+            <summary>
+            Lấy tất cả entity.
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <returns>Danh sách entity T.</returns>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.InsertAsync(`0)">
+            <summary>
+            Insert entity mới .
+            Sử dụng attribute [ColumnName] để mapping cột.
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <param name="entity">Entity cần insert.</param>
+            <returns>Id của entity mới (Guid, từ [Key] property).</returns>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.UpdateAsync(System.Guid,`0)">
+            <summary>
+            Update entity theo Id .
+            nếu bảng nào không cho Update thì override lại method này.
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <param name="id">Id của entity cần update.</param>
+            <param name="entity">Entity với dữ liệu mới.</param>
+            <returns>Số record bị ảnh hưởng.</returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.BulkUpdateSameValueAsync(System.Collections.Generic.List{System.Guid},System.String,System.Object)" -->
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.DeleteAsync(System.Guid)">
+            <summary>
+            Xóa mềm entity theo Id (async, set is_deleted = 1).
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <param name="id">Id của entity cần xóa mềm.</param>
+            <returns>Số record bị ảnh hưởng (thường là 1 hoặc 0).</returns>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.GetById(System.Guid)">
+            <summary>
+            Lấy entity theo Id (sync, chưa implement).
+            Nên dùng GetByIdAsync thay thế.
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <param name="id">Id của entity.</param>
+            <returns>Entity T nếu tồn tại.</returns>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.IsValueExistAsync(System.String,System.Object,System.Nullable{System.Guid})">
+            <summary>
+            Kiểm tra giá trị có tồn tại trong cột (bỏ qua soft delete và ignoreId nếu có).
+            Created by: TMHieu (05/12/2025)
+            </summary>
+            <param name="propertyOrColumnName">Truyền vào tên cột hàm sẽ tự map với tên cột</param>
+            <param name="value">Giá trị cần kiểm tra.</param>
+            <param name="ignoreId">ID cần bỏ qua (khi update để tránh trùng chính nó).</param>
+            <returns>True nếu tồn tại, False nếu không.</returns>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.QueryPagingAsync(System.Int32,System.Int32,System.String,System.String,System.String,System.String)">
+            <summary>
+            Hàm trả về danh sách có phân trang, tìm kiếm và sắp xếp
+            Created by: TMHieu (07/12/2025)
+            </summary>
+            <param name="page">Trang thứ mấy</param>
+            <param name="pageSize">Số bản ghi một trang.</param>
+            <param name="search">Từ khóa tìm kiếm</param>
+            <param name="sortBy">cột cần sắp xếp</param>
+            <param name="sortOrder">hướng sắp xếp (ASC/DESC)</param>
+            <returns>Đối tượng PagingResponse chứa dữ liệu và metadata</returns>
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.BaseRepository`1.BulkInsertAsync(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Bulk insert dùng 1 query thực hiện cho toàn bộ danh sách
+            </summary>
+            <param name="entities">Danh sách entity cần insert</param>
+            Created By: TMHieu (12/12/2025)
+            <returns>Số bản ghi insert thành công</returns>
+        </member>
+        <member name="T:MISA.CRM.Infrastructure.Repositories.CustomerRepository">
+            <summary>
+            Repository xử lý các thao tác tương tác với Database của Entity Customer
+            <para/>Triển khai interface ICustomerRepository, kế thừa các thao tác CRUD cơ bản từ BaseRepository
+            </summary>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.CustomerRepository.#ctor(MISA.CRM.Infrastructure.Connection.MySqlConnectionFactory)">
+            <summary>
+            Hàm khởi tạo Repository
+            </summary>
+            <param name="factory">Factory tạo kết nối MySQL (được tiêm vào)</param>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.CustomerRepository.GetLastCodeAsync">
+            <summary>
+            Lấy mã khách hàng lớn nhất hiện tại trong database
+            </summary>
+            <returns>Mã khách hàng lớn nhất (ví dụ: KH202512000001)</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.CustomerRepository.GetSortableFields">
+            <summary>
+            Định nghĩa danh sách các trường (cột) cho phép sắp xếp trong chức năng phân trang
+            </summary>
+            <returns>HashSet chứa tên các cột cho phép sắp xếp</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.CustomerRepository.GetSearchFields">
+            <summary>
+            Định nghĩa danh sách các trường (cột) cho phép tìm kiếm trong chức năng phân trang
+            </summary>
+            <returns>HashSet chứa tên các cột cho phép tìm kiếm (sử dụng LIKE)</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.Infrastructure.Repositories.CustomerRepository.SoftDeleteManyAsync(System.Collections.Generic.List{System.Guid})">
+            <summary>
+            Thực hiện xóa mềm (Soft Delete) hàng loạt cho danh sách ID khách hàng
+            <para/>Logic: Tăng giá trị `crm_customer_is_deleted` lên 1 so với giá trị lớn nhất hiện có của các bản ghi cùng Email/Phone
+            </summary>
+            <param name="ids">Danh sách ID (Guid) khách hàng cần xóa mềm</param>
+            <returns>Tổng số bản ghi đã bị ảnh hưởng</returns>
+            Created by TMHieu - 9/12/2025
+        </member>
+    </members>
+</doc>

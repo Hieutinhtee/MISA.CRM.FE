@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MISA.CRM.API</name>
+    </assembly>
+    <members>
+        <member name="T:MISA.CRM.API.Controllers.BaseController`1">
+            <summary>
+            Base Controller (Generic) cung cấp các API cơ bản cho một thực thể (Entity)
+            <para/>Các Controller cụ thể (như CustomersController) sẽ kế thừa BaseController để sử dụng lại các API CRUD, Paging...
+            </summary>
+            <typeparam name="T">Loại Entity (Class) mà Controller này quản lý</typeparam>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="F:MISA.CRM.API.Controllers.BaseController`1._service">
+            <summary>
+            Service xử lý nghiệp vụ cơ sở cho Entity T
+            </summary>
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.BaseController`1.#ctor(MISA.CRM.CORE.Interfaces.Services.IBaseService{`0})">
+            <summary>
+            Hàm khởi tạo Base Controller
+            </summary>
+            <param name="service">Service xử lý nghiệp vụ được tiêm vào (Dependency Injection)</param>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.BaseController`1.GetAll">
+            <summary>
+            Lấy tất cả bản ghi của Entity T
+            </summary>
+            <returns>Danh sách tất cả các Entity T</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.BaseController`1.GetById(System.Guid)">
+            <summary>
+            Lấy một bản ghi theo ID
+            </summary>
+            <param name="id">ID (Guid) của bản ghi cần lấy</param>
+            <returns>Bản ghi Entity T tương ứng</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.BaseController`1.Create(`0)">
+            <summary>
+            Thêm mới một bản ghi Entity T
+            </summary>
+            <param name="entity">Đối tượng Entity T cần thêm mới</param>
+            <returns>ID (Guid) của bản ghi vừa được tạo</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.BaseController`1.Update(System.Guid,`0)">
+            <summary>
+            Cập nhật một bản ghi Entity T theo ID
+            </summary>
+            <param name="id">ID (Guid) của bản ghi cần cập nhật</param>
+            <param name="entity">Đối tượng Entity T chứa dữ liệu mới</param>
+            <returns>Số bản ghi đã được cập nhật</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.BaseController`1.Delete(System.Guid)">
+            <summary>
+            Xóa một bản ghi theo ID
+            </summary>
+            <param name="id">ID (Guid) của bản ghi cần xóa</param>
+            <returns>Số bản ghi đã được xóa</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.BaseController`1.CheckDuplicate(MISA.CRM.CORE.DTOs.Requests.DuplicateCheckRequest)">
+            <summary>
+            Kiểm tra tính trùng lặp của một giá trị trong một trường dữ liệu (unique check)
+            </summary>
+            <param name="req">DTO chứa Tên trường, Giá trị cần kiểm tra và ID cần bỏ qua (nếu có)</param>
+            <returns>Đối tượng chứa cờ `isDuplicate` (true/false)</returns>
+            <exception cref="T:MISA.CRM.CORE.Exceptions.ValidateException">Ném ra ngoại lệ nếu dữ liệu request không hợp lệ</exception>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.BaseController`1.GetPaging(System.Int32,System.Int32,System.String,System.String,System.String,System.String)">
+            <summary>
+            Lấy dữ liệu phân trang, hỗ trợ tìm kiếm và sắp xếp
+            </summary>
+            <param name="page">Số trang hiện tại (mặc định là 1)</param>
+            <param name="pageSize">Kích thước trang (mặc định là 100)</param>
+            <param name="search">Chuỗi tìm kiếm</param>
+            <param name="sortBy">Tên trường muốn sắp xếp</param>
+            <param name="sortOrder">Thứ tự sắp xếp (asc/desc)</param>
+            <param name="type">Tham số lọc theo loại (nếu có)</param>
+            <returns>Đối tượng PagingResponse chứa danh sách dữ liệu và thông tin meta</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="T:MISA.CRM.API.Controllers.CustomersController">
+            <summary>
+            Controller cung cấp các API xử lý nghiệp vụ liên quan đến Khách hàng (Customer)
+            <para/>Sử dụng để giao tiếp với Client trong các nghiệp vụ CRUD và xử lý dữ liệu khách hàng
+            </summary>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.CustomersController.#ctor(MISA.CRM.CORE.Interfaces.Services.ICustomerService)">
+            <summary>
+            Hàm khởi tạo Controller
+            </summary>
+            <param name="customerService">Service xử lý nghiệp vụ khách hàng được tiêm vào (Dependency Injection)</param>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.CustomersController.GetNextCode">
+            <summary>
+            Lấy mã khách hàng mới tự động tăng
+            <para/>Sử dụng khi hiển thị form thêm mới khách hàng để gợi ý mã code tiếp theo
+            </summary>
+            <returns>Mã khách hàng mới (Ví dụ: KH0001)</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:MISA.CRM.API.Controllers.CustomersController.BulkUpdate(MISA.CRM.CORE.DTOs.Requests.BulkUpdateCustomerType)">
+            <summary>
+            Cập nhật cùng loại khách hàng cho nhiều bản ghi
+            <para/>Sử dụng trong chức năng chọn nhiều dòng và cập nhật hàng loạt trên giao diện danh sách
+            </summary>
+            <param name="request">Thông tin danh sách id, tên cột, giá trị mới cần cập nhật</param>
+            <returns>Số bản ghi đã được cập nhật thành công</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:MISA.CRM.API.Controllers.CustomersController.ImportCsv(Microsoft.AspNetCore.Http.IFormFile)" -->
+        <member name="M:MISA.CRM.API.Controllers.CustomersController.SoftDeleteMany(System.Collections.Generic.List{System.Guid})">
+            <summary>
+            Thực hiện xóa mềm (soft delete) hàng loạt các bản ghi Khách hàng
+            <para/>Sử dụng phương thức HTTP PUT để cập nhật trạng thái xóa mềm thay vì DELETE
+            </summary>
+            <param name="ids">Danh sách ID (Guid) của các bản ghi Khách hàng cần xóa mềm</param>
+            <returns>Kết quả HTTP 200 OK kèm theo số lượng bản ghi đã bị ảnh hưởng</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="T:ValidateExceptionMiddleware">
+            <summary>
+            Middleware toàn cục có nhiệm vụ bắt (catch) các ngoại lệ (Exception) xảy ra trong luồng xử lý Request
+            <para/>Ngoại lệ sẽ được chuyển đổi thành cấu trúc phản hồi JSON chuẩn hóa và trả về cho Client
+            </summary>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:ValidateExceptionMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)">
+            <summary>
+            Hàm khởi tạo Middleware
+            </summary>
+            <param name="next">Delegate trỏ đến Middleware tiếp theo trong pipeline</param>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:ValidateExceptionMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Thực thi Middleware: Bao bọc việc gọi Middleware tiếp theo trong khối try-catch để xử lý ngoại lệ
+            </summary>
+            <param name="context">Ngữ cảnh HTTP hiện tại</param>
+            <returns>Task</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+        <member name="M:ValidateExceptionMiddleware.HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext,System.Int32,System.String,System.Exception)">
+            <summary>
+            Hàm xử lý và chuẩn hóa ngoại lệ thành phản hồi JSON
+            </summary>
+            <param name="context">Ngữ cảnh HTTP</param>
+            <param name="statusCode">Mã trạng thái HTTP</param>
+            <param name="defaultUserMsg">Thông báo mặc định cho người dùng (nếu Exception không cung cấp UserMsg)</param>
+            <param name="ex">Đối tượng ngoại lệ</param>
+            <returns>Task</returns>
+            Created by TMHieu - 7/12/2025
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,15 @@
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\bin\Debug\net8.0\MISA.CRM.CORE.deps.json
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\bin\Debug\net8.0\MISA.CRM.CORE.dll
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\bin\Debug\net8.0\MISA.CRM.CORE.pdb
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\bin\Debug\net8.0\MISA.CRM.CORE.xml
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\MISA.CRM.CORE.csproj.AssemblyReference.cache
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\MISA.CRM.CORE.GeneratedMSBuildEditorConfig.editorconfig
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\MISA.CRM.CORE.AssemblyInfoInputs.cache
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\MISA.CRM.CORE.AssemblyInfo.cs
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\MISA.CRM.CORE.csproj.CoreCompileInputs.cache
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\MISA.CRM.CORE.sourcelink.json
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\MISA.CRM.CORE.dll
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\refint\MISA.CRM.CORE.dll
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\MISA.CRM.CORE.xml
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\MISA.CRM.CORE.pdb
+D:\BTL-Misa\MISA.CRM.FE\Backend\MISA.CRM.CORE\obj\Debug\net8.0\ref\MISA.CRM.CORE.dll
